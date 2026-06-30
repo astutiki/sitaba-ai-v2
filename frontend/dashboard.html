@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Smart Assistant SITABA</title>
+  <link rel="icon" type="image/png" href="../assets/sinta-2.png">
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">PU</div>
+        <h2>SITABA</h2>
+      </div>
+
+      <nav>
+        <button>▦ Anggaran Tanggap Bencana</button>
+        <button>▣ Laporan</button>
+        <button>🛡 Mitigasi & Siapsiaga</button>
+        <button>📷 Instagram Feed</button>
+        <button>🛠 Sumber Daya</button>
+        <button>☁ Master Data</button>
+        <button class="active">🤖 Smart Assistant</button>
+      </nav>
+
+      <button class="minimize">‹ Minimize menu</button>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h1>Smart Assistant SITABA</h1>
+        <button class="logout" onclick="logout()">⏻</button>
+      </div>
+
+      <section class="panel">
+        <div class="stats">
+          <div class="stat-card">
+            <span class="icon green">♟</span>
+            <p>User Pengunjung</p>
+            <h2 id="totalUser">0</h2>
+          </div>
+
+          <div class="stat-card">
+            <span class="icon orange">▣</span>
+            <p>Total Percakapan</p>
+            <h2 id="totalChat">0</h2>
+          </div>
+
+          <div class="stat-card">
+            <span class="icon blue">◷</span>
+            <p>Rata-rata Respon Menjawab</p>
+            <h2 id="avgResponse">0s</h2>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button id="tabQuick" class="tab active" onclick="showTab('quick')">Quick Chat</button>
+          <button id="tabUsers" class="tab" onclick="showTab('users')">User Pengunjung</button>
+        </div>
+
+        <section id="quickSection">
+          <div class="section-head">
+            <h2>Quick Chat</h2>
+            <button class="primary" onclick="openAddModal()">Tambah Quick Chat</button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Question</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="quickChatTable"></tbody>
+          </table>
+
+          <div class="pagination">
+            <button disabled>Previous</button>
+            <span>Page 1 of 1</span>
+            <button disabled>Next</button>
+          </div>
+        </section>
+
+        <section id="userSection" class="hidden">
+          <div class="section-head">
+            <h2>User Pengunjung</h2>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <h3 id="modalTitle">Tambah Quick Chat</h3>
+      <textarea id="quickInput" maxlength="200" placeholder="Masukkan pertanyaan quick chat"></textarea>
+
+      <div class="modal-actions">
+        <button onclick="closeModal()">Batalkan</button>
+        <button class="primary" onclick="saveQuickChat()">Simpan</button>
+      </div>
+    </div>
+  </div>
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Tambah Quick Chat</h3>
+    <textarea id="quickInput" maxlength="200" placeholder="Masukkan pertanyaan quick chat"></textarea>
+
+    <div class="modal-actions">
+      <button onclick="closeModal()">Batalkan</button>
+      <button class="primary" onclick="saveQuickChat()">Simpan</button>
+    </div>
+  </div>
+</div>  
+  <script src="dashboard.js"></script>
+</body>
+</html>

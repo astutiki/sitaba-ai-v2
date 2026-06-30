@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               img-src 'self' data:;
+               style-src 'self';
+               script-src 'self';
+               connect-src 'self' https://constable-krypton-sketch.ngrok-free.dev;
+               object-src 'none';
+               base-uri 'self';
+               form-action 'self';">
+
+    <title>SITABA AI</title>
+    <link rel="icon" type="image/png" href="/assets/sinta-2.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <section class="hero">
+        <h1>AI SITABA adalah asisten percakapan berbasis AI</h1>
+        <p>
+            Sistem ini membantu masyarakat mendapatkan informasi
+            kebencanaan PU dari sitaba.pu.go.id.
+        </p>
+        <button type="button">Eksplorasi</button>
+    </section>
+
+    <div class="chat-widget hidden" id="chatWidget">
+
+        <div class="chat-header">
+            <div class="avatar">
+                <img src="/assets/sinta-1.png" alt="Logo SINTA">
+            </div>
+
+            <div class="header-text">
+                <h3>SINTA</h3>
+                <span>● Asisten Sigap Tanggap Bencana</span>
+            </div>
+
+            <div class="chevron"></div>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+            <div class="bot-row">
+                <div class="bot-icon">
+                    <img src="/assets/sinta-1.png" alt="Logo SINTA">
+                </div>
+
+                <div class="bot-message">
+                    Hai! Saya SINTA 👋
+                    Ada yang bisa saya bantu mengenai informasi kebencanaan Kementerian PU melalui SITABA?
+                </div>
+            </div>
+        </div>
+
+        <div class="suggested-questions">
+            <button type="button" data-question="Jelaskan secara singkat apa itu SITABA.">
+                Apa itu SITABA?
+            </button>
+
+            <button type="button" data-question="Sebutkan menu utama yang ada di SITABA dalam bentuk bullet list.">
+                Menu SITABA
+            </button>
+
+            <button type="button" data-question="Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?">
+                Informasi Kebencanaan
+            </button>
+        </div>
+
+        <div class="chat-input">
+            <input
+                id="userInput"
+                type="text"
+                placeholder="Type a message..."
+                maxlength="500"
+                autocomplete="off"
+            >
+
+            <button type="button" id="sendButton">
+                ➜
+            </button>
+        </div>
+
+        <div class="chat-footer">
+            🔒 Powered by SINTA • 100% Tim SITABA
+        </div>
+    </div>
+
+    <div class="chat-button" id="chatToggle">
+        <img src="/assets/sinta.png" alt="Buka Chat SINTA">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

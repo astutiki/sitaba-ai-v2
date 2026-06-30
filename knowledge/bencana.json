@@ -1,0 +1,13 @@
+[
+ {
+   "tanggal":"2025-03-20",
+   "lokasi":"Kabupaten Bogor",
+   "jenis":"Longsor",
+   "status":"Penanganan"
+ },
+ {
+   "tanggal":"2025-03-20",
+   "lokasi":"Bandung",
+   "jenis":"Banjir"
+ }
+]

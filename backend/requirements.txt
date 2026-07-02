@@ -4,3 +4,5 @@ requests
 pydantic
 python-dotenv
 supabase
+reportlab
+pillow

@@ -23,6 +23,37 @@ function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  const suggestedQuestions = document.getElementById("suggestedQuestions");
+  if (suggestedQuestions) {
+    suggestedQuestions.style.display = "none";
+  }
+
+  addUserMessage(message);
+  input.value = "";
+
+  // lanjut fetch ke backend di sini
+}
+
+document.querySelectorAll(".suggested-questions button").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById("messageInput");
+    input.value = button.dataset.question;
+
+    const suggestedQuestions = document.getElementById("suggestedQuestions");
+    if (suggestedQuestions) {
+      suggestedQuestions.style.display = "none";
+    }
+
+    sendMessage();
+  });
+});
+
 function addUserMessage(message) {
   const row = document.createElement("div");
   row.className = "user-row";

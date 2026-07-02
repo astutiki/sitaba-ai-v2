@@ -3,6 +3,24 @@
   font-family: Arial, sans-serif;
 }
 
+.welcome-message {
+  max-width: 380px;
+  padding: 18px 22px;
+  line-height: 1.6;
+  font-size: 15px;
+  color: #1f2937;
+  text-align: left;
+  white-space: normal;
+}
+
+.welcome-message p {
+  margin: 0 0 8px 0;
+}
+
+.welcome-message p:last-child {
+  margin-bottom: 0;
+}
+
 body {
   margin: 0;
   background: #3157f6;

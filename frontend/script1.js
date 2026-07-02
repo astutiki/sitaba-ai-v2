@@ -5,7 +5,6 @@ const chatWidget = document.getElementById("chatWidget");
 const sendButton = document.getElementById("sendButton");
 const userInput = document.getElementById("userInput");
 const chatBody = document.getElementById("chatBody");
-const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
 
 let sessionId = localStorage.getItem("sitaba_session_id");
@@ -24,11 +23,36 @@ function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
-function hideSuggestedQuestions() {
+function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  const suggestedQuestions = document.getElementById("suggestedQuestions");
   if (suggestedQuestions) {
     suggestedQuestions.style.display = "none";
   }
+
+  addUserMessage(message);
+  input.value = "";
+
+  // lanjut fetch ke backend di sini
 }
+
+document.querySelectorAll(".suggested-questions button").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById("messageInput");
+    input.value = button.dataset.question;
+
+    const suggestedQuestions = document.getElementById("suggestedQuestions");
+    if (suggestedQuestions) {
+      suggestedQuestions.style.display = "none";
+    }
+
+    sendMessage();
+  });
+});
 
 function addUserMessage(message) {
   const row = document.createElement("div");
@@ -72,8 +96,6 @@ async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
 
   if (!message) return;
-
-  hideSuggestedQuestions();
 
   addUserMessage(message);
   userInput.value = "";

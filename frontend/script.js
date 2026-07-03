@@ -1,21 +1,27 @@
 const API_CHAT_URL = "https://constable-krypton-sketch.ngrok-free.dev/chat";
 
 const chatToggle = document.getElementById("chatToggle");
+const prechatPanel = document.getElementById("prechatPanel");
 const chatWidget = document.getElementById("chatWidget");
+const prechatClose = document.getElementById("prechatClose");
+const chatClose = document.getElementById("chatClose");
+
+const startChatButton = document.getElementById("startChatButton");
+const visitorName = document.getElementById("visitorName");
+const visitorEmail = document.getElementById("visitorEmail");
+
 const sendButton = document.getElementById("sendButton");
 const userInput = document.getElementById("userInput");
 const chatBody = document.getElementById("chatBody");
 const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
 
-const prechatOverlay = document.getElementById("prechatOverlay");
-const prechatClose = document.getElementById("prechatClose");
-const startChatButton = document.getElementById("startChatButton");
-const visitorName = document.getElementById("visitorName");
-const visitorEmail = document.getElementById("visitorEmail");
-
 let currentVisitor = null;
-let sessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
+let sessionId = createSessionId();
+
+function createSessionId() {
+  return "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
+}
 
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
@@ -25,18 +31,27 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-function hideSuggestedQuestions() {
-  if (suggestedQuestions) suggestedQuestions.style.display = "none";
-}
-
-function showPrechat() {
-  prechatOverlay.classList.remove("hidden");
+function hideAllPanels() {
+  prechatPanel.classList.add("hidden");
   chatWidget.classList.add("hidden");
 }
 
+function showPrechat() {
+  chatWidget.classList.add("hidden");
+  prechatPanel.classList.remove("hidden");
+  visitorName.focus();
+}
+
 function showChat() {
-  prechatOverlay.classList.add("hidden");
+  prechatPanel.classList.add("hidden");
   chatWidget.classList.remove("hidden");
+  userInput.focus();
+}
+
+function hideSuggestedQuestions() {
+  if (suggestedQuestions) {
+    suggestedQuestions.style.display = "none";
+  }
 }
 
 function addUserMessage(message) {
@@ -71,6 +86,7 @@ function addBotMessage(message) {
 
   row.appendChild(icon);
   row.appendChild(bubble);
+
   chatBody.appendChild(row);
   chatBody.scrollTop = chatBody.scrollHeight;
 
@@ -79,6 +95,7 @@ function addBotMessage(message) {
 
 async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
+
   if (!message) return;
 
   hideSuggestedQuestions();
@@ -105,11 +122,16 @@ async function sendMessage(customMessage = null) {
     const data = await response.json();
 
     if (!response.ok) {
-      loadingBubble.innerText = safeText(data.error || data.detail || "Terjadi kesalahan.");
+      loadingBubble.innerText = safeText(
+        data.error || data.detail || "Terjadi kesalahan."
+      );
       return;
     }
 
-    loadingBubble.innerText = safeText(data.reply || "Maaf, jawaban belum tersedia.");
+    loadingBubble.innerText = safeText(
+      data.reply || "Maaf, jawaban belum tersedia."
+    );
+
   } catch (error) {
     loadingBubble.innerText = "Maaf, koneksi ke AI SITABA belum aktif.";
   }
@@ -123,9 +145,8 @@ chatToggle.addEventListener("click", () => {
   }
 });
 
-prechatClose.addEventListener("click", () => {
-  prechatOverlay.classList.add("hidden");
-});
+prechatClose.addEventListener("click", hideAllPanels);
+chatClose.addEventListener("click", hideAllPanels);
 
 startChatButton.addEventListener("click", () => {
   const nama = visitorName.value.trim();
@@ -133,20 +154,29 @@ startChatButton.addEventListener("click", () => {
 
   if (!nama) {
     alert("Nama wajib diisi.");
+    visitorName.focus();
     return;
   }
 
   if (!email) {
     alert("Email wajib diisi.");
+    visitorEmail.focus();
     return;
   }
 
   if (!isValidEmail(email)) {
     alert("Format email tidak valid. Contoh: nama@email.com");
+    visitorEmail.focus();
     return;
   }
 
-  currentVisitor = { nama, email };
+  currentVisitor = {
+    nama: nama,
+    email: email
+  };
+
+  sessionId = createSessionId();
+
   showChat();
 });
 
@@ -155,7 +185,9 @@ sendButton.addEventListener("click", () => {
 });
 
 userInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") sendMessage();
+  if (event.key === "Enter") {
+    sendMessage();
+  }
 });
 
 suggestedButtons.forEach((button) => {
@@ -166,6 +198,5 @@ suggestedButtons.forEach((button) => {
 
 window.addEventListener("DOMContentLoaded", () => {
   currentVisitor = null;
-  chatWidget.classList.add("hidden");
-  prechatOverlay.classList.add("hidden");
+  hideAllPanels();
 });

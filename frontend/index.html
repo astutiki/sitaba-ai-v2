@@ -1,118 +1,152 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy"
-      content="default-src 'self';
-               img-src 'self' data:;
-               style-src 'self';
-               script-src 'self';
-               connect-src 'self' https://constable-krypton-sketch.ngrok-free.dev;
-               object-src 'none';
-               base-uri 'self';
-               form-action 'self';">
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self';
+             img-src 'self' data:;
+             style-src 'self';
+             script-src 'self';
+             connect-src 'self' https://constable-krypton-sketch.ngrok-free.dev;
+             object-src 'none';
+             base-uri 'self';
+             form-action 'self';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SITABA AI</title>
-    <link rel="icon" type="image/png" href="assets/sinta-2.png">
-    <link rel="stylesheet" href="style.css">
+  <title>SITABA AI</title>
+  <link rel="icon" type="image/png" href="assets/sinta-2.png">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <main class="landing">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">PU</div>
+        <div>
+          <h2>SITABA</h2>
+          <p>Sistem Informasi Kebencanaan PUPR</p>
+        </div>
+      </div>
+
+      <nav>
+        <a href="#">Beranda</a>
+        <a href="#">Tentang SITABA</a>
+        <a href="#">Informasi</a>
+        <a href="/dashboard/">Dashboard</a>
+      </nav>
+    </header>
+
     <section class="hero">
+      <div class="hero-content">
         <h1>AI SITABA adalah asisten percakapan berbasis AI</h1>
         <p>
-            Sistem ini membantu masyarakat mendapatkan informasi
-            kebencanaan PU dari sitaba.pu.go.id.
+          Sistem ini membantu masyarakat mendapatkan informasi kebencanaan PU
+          dari sitaba.pu.go.id secara cepat, akurat, dan mudah dipahami.
         </p>
-        <button type="button">Eksplorasi</button>
+        <button type="button" class="hero-button">Eksplorasi</button>
+      </div>
     </section>
+  </main>
 
-    <div class="prechat-overlay hidden" id="prechatOverlay">
-        <div class="prechat-modal">
-            <button class="prechat-close" id="prechatClose">×</button>
+  <!-- PRECHAT PANEL -->
+  <section class="assistant-panel prechat-panel hidden" id="prechatPanel">
+    <div class="assistant-header">
+      <div class="assistant-avatar">
+        <img src="assets/sinta-1.png" alt="SINTA">
+      </div>
 
-            <div class="prechat-title">
-                <img src="assets/sinta-1.png" alt="">
-                <div>
-                    <h2>Halo! Ada yang bisa SINTA bantu?</h2>
-                    <p>Isi form di bawah untuk terhubung dengan Asisten Sigap Tanggap Bencana</p>
-                </div>
-            </div>
+      <div class="assistant-title">
+        <h3>SINTA</h3>
+        <p><span class="online-dot"></span> Asisten Sigap Tanggap Bencana</p>
+      </div>
 
-            <label>Nama</label>
-            <input id="visitorName" type="text">
-
-            <label>Email</label>
-            <input id="visitorEmail" type="email">
-
-            <button id="startChatButton" class="prechat-submit">Kirim Pesan</button>
-        </div>
+      <button class="panel-close" id="prechatClose" type="button">×</button>
     </div>
 
-    <div class="chat-widget hidden" id="chatWidget">
-        <div class="chat-header">
-            <div class="avatar">
-                <img src="assets/sinta-1.png" alt="">
-            </div>
+    <div class="prechat-content">
+      <h2>Halo! Ada yang bisa SINTA bantu?</h2>
+      <p>
+        Isi form di bawah untuk terhubung dengan Asisten Sigap Tanggap Bencana.
+      </p>
 
-            <div class="header-text">
-                <h3>SINTA</h3>
-                <span>● Asisten Sigap Tanggap Bencana</span>
-            </div>
+      <label for="visitorName">Nama</label>
+      <input id="visitorName" type="text" placeholder="Masukkan nama Anda" autocomplete="name">
 
-            <div class="chevron"></div>
-        </div>
+      <label for="visitorEmail">Email</label>
+      <input id="visitorEmail" type="email" placeholder="Masukkan email Anda" autocomplete="email">
 
-        <div class="chat-body" id="chatBody">
-            <div class="bot-row">
-                <div class="bot-icon">
-                    <img src="assets/sinta-1.png" alt="">
-                </div>
+      <button id="startChatButton" type="button" class="primary-button">
+        Kirim Pesan
+      </button>
 
-                <div class="message bot-message welcome-message">
-                    Hai! Saya SINTA 👋
-                    Ada yang bisa saya bantu mengenai informasi kebencanaan Kementerian PU melalui SITABA?
-                </div>
-            </div>
-        </div>
+      <small>🔒 Data Anda aman dan tidak akan dibagikan.</small>
+    </div>
+  </section>
 
-        <div class="suggested-questions" id="suggestedQuestions">
-            <button type="button" data-question="Sebutkan tahun kejadian banjir di Bali.">
-                Tahun kejadian banjir di Bali?
-            </button>
+  <!-- CHAT PANEL -->
+  <section class="assistant-panel chat-panel hidden" id="chatWidget">
+    <div class="assistant-header">
+      <div class="assistant-avatar">
+        <img src="assets/sinta-1.png" alt="SINTA">
+      </div>
 
-            <button type="button" data-question="Informasi longsor di Jawa Timur">
-                Longsor di Jawa Timur terjadi kapan?
-            </button>
+      <div class="assistant-title">
+        <h3>SINTA</h3>
+        <p><span class="online-dot"></span> Asisten Sigap Tanggap Bencana</p>
+      </div>
 
-            <button type="button" data-question="Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?">
-                Informasi Kebencanaan
-            </button>
-        </div>
-
-        <div class="chat-input">
-            <input
-                id="userInput"
-                type="text"
-                placeholder="Type a message..."
-                maxlength="500"
-                autocomplete="off"
-            >
-
-            <button type="button" id="sendButton">
-                ➜
-            </button>
-        </div>
-
-        <div class="chat-footer">
-            🔒 Powered by SINTA • 100% Tim SITABA
-        </div>
+      <button class="panel-close" id="chatClose" type="button">×</button>
     </div>
 
-    <div class="chat-button" id="chatToggle">
-        <img src="assets/sinta.png" alt="Buka Chat SINTA">
+    <div class="chat-body" id="chatBody">
+      <div class="bot-row">
+        <div class="bot-icon">
+          <img src="assets/sinta-1.png" alt="Logo SINTA">
+        </div>
+
+        <div class="bot-message welcome-message">
+          <p>Hai! Saya SINTA 👋</p>
+          <p>Ada yang bisa saya bantu mengenai informasi kebencanaan Kementerian PU melalui SITABA?</p>
+        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <div class="suggested-questions" id="suggestedQuestions">
+      <button type="button" data-question="Sebutkan tahun kejadian banjir di Bali.">
+        Tahun kejadian banjir di Bali?
+      </button>
+
+      <button type="button" data-question="Informasi longsor di Jawa Timur">
+        Longsor di Jawa Timur terjadi kapan?
+      </button>
+
+      <button type="button" data-question="Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?">
+        Informasi Kebencanaan
+      </button>
+    </div>
+
+    <div class="chat-input">
+      <input
+        id="userInput"
+        type="text"
+        placeholder="Type a message..."
+        maxlength="500"
+        autocomplete="off"
+      >
+
+      <button type="button" id="sendButton">➜</button>
+    </div>
+
+    <div class="chat-footer">
+      🔒 Powered by SINTA • 100% Tim SITABA
+    </div>
+  </section>
+
+  <button class="chat-button" id="chatToggle" type="button">
+    <img src="assets/sinta.png" alt="Buka Chat SINTA">
+  </button>
+
+  <script src="script.js"></script>
 </body>
 </html>

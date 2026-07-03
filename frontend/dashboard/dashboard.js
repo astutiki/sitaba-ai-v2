@@ -22,7 +22,8 @@ const pageSubtitle = document.getElementById("pageSubtitle");
 const tableTitle = document.getElementById("tableTitle");
 const tableDesc = document.getElementById("tableDesc");
 
-const LOGIN_KEY = "sitaba_admin_login";
+localStorage.setItem(LOGIN_KEY, "true");
+showDashboard();
 
 let currentPage = "dashboard";
 
@@ -144,6 +145,11 @@ function renderQuickChat() {
 }
 
 function renderUsers() {
+  const visitors = getChatbotVisitors();
+
+  tableTitle.innerText = "User Pengunjung";
+  tableDesc.innerText = "Daftar pengguna yang mengisi form chatbot SINTA.";
+
   tableArea.innerHTML = `
     <table>
       <thead>
@@ -151,12 +157,22 @@ function renderUsers() {
           <th>No</th>
           <th>Nama</th>
           <th>Email</th>
-          <th>Total Chat</th>
+          <th>Waktu Login</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td>Anasta</td><td>anasta@email.com</td><td>3</td></tr>
-        <tr><td>2</td><td>Budi</td><td>budi@email.com</td><td>2</td></tr>
+        ${
+          visitors.length
+            ? visitors.map((item, index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${safeText(item.nama || item.name || "-")}</td>
+                <td>${safeText(item.email || "-")}</td>
+                <td>${safeText(item.waktu || "-")}</td>
+              </tr>
+            `).join("")
+            : `<tr><td colspan="4" class="empty">Belum ada pengunjung chatbot.</td></tr>`
+        }
       </tbody>
     </table>
   `;
@@ -283,3 +299,29 @@ function updateClock(){
 updateClock();
 
 setInterval(updateClock,1000);
+
+function getChatbotVisitors() {
+  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+  const singleVisitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "null");
+
+  if (Array.isArray(visitors) && visitors.length > 0) {
+    return visitors;
+  }
+
+  if (singleVisitor && singleVisitor.email) {
+    return [singleVisitor];
+  }
+
+  return [];
+}
+
+function loadVisitorDashboard() {
+  const visitors = getChatbotVisitors();
+
+  document.getElementById("totalUsers").innerText = visitors.length;
+
+  if (typeof renderUsers === "function") {
+    renderUsers();
+  }
+}
+loadVisitorDashboard();

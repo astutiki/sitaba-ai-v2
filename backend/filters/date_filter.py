@@ -13,11 +13,12 @@ BULAN = {
     "september": "09",
     "oktober": "10",
     "november": "11",
-    "desember": "12"
+    "desember": "12",
 }
 
 
-def deteksi_tahun(text):
+def deteksi_tahun(text: str):
+    text = text.lower()
 
     hasil = re.search(r"(20\d{2})", text)
 
@@ -33,7 +34,8 @@ def deteksi_tahun(text):
     return None
 
 
-def deteksi_bulan(text):
+def deteksi_bulan(text: str):
+    text = text.lower()
 
     for nama, angka in BULAN.items():
         if nama in text:
@@ -41,4 +43,18 @@ def deteksi_bulan(text):
 
     return None, None
 
-def deteksi_hari
+
+def deteksi_hari(text: str):
+    text = text.lower()
+    hari_ini = datetime.now()
+
+    if "hari ini" in text:
+        return hari_ini.strftime("%Y-%m-%d")
+
+    if "kemarin" in text:
+        return (hari_ini - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    if "besok" in text:
+        return (hari_ini + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    return None

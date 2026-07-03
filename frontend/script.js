@@ -82,14 +82,15 @@ async function sendMessage(customMessage = null) {
 
   try {
     const response = await fetch(API_CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+    },
+    body: JSON.stringify({
         message: message,
         sessionId: sessionId
-      })
+    })
     });
 
     const data = await response.json();

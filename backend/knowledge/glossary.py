@@ -182,6 +182,7 @@ Asisten virtual yang membantu masyarakat memperoleh informasi kebencanaan berdas
         "sitaba":
         """🏛 SITABA
 
+        
 Sistem Informasi Kebencanaan Kementerian Pekerjaan Umum yang menyediakan informasi terkait kejadian bencana, sumber daya, infrastruktur terdampak, publikasi, dan regulasi.
 """
     }
@@ -197,6 +198,10 @@ Sistem Informasi Kebencanaan Kementerian Pekerjaan Umum yang menyediakan informa
         or "istilah" in q
         or "arti kata" in q
         or "definisi" in q
+        or "itu apa" in q
+        or "artinya apa" in q
+        or "pengertiannya apa" in q
+        or "adalah" in q
     ):
 
         return """
@@ -204,7 +209,22 @@ Sistem Informasi Kebencanaan Kementerian Pekerjaan Umum yang menyediakan informa
 
 AI SINTA dapat menjelaskan berbagai istilah kebencanaan seperti:
 
-• Bencana
+• Ancaman  (hazard)
+• Bencana (disaster)
+• Kerentanan (Vulnerability)
+• Kapasitas (Capacity)
+• Risiko Bencana (Disaster Risk)
+• Kesiapsiagaan (preparedness)
+• Peringatan Dini (Early Warning System)
+• Tanggap Darurat (Emergency Response)
+• Status Keadaan Darurat Bencana
+• SAR (Search and Rescue)
+• KRB (Kaji Cepat Risiko Bencana) 
+• Rencana Kontinjensi (Contingency Plan)
+• Penyintas (Survivor)
+Pengungsi (Displaced Persons / Refugees)
+• Kearifan Lokal (Local Wisdom)
+• Jalur Evakuasi (Evacuation Route)
 • Banjir
 • Longsor
 • Gempa
@@ -229,6 +249,7 @@ AI SINTA dapat menjelaskan berbagai istilah kebencanaan seperti:
 • Titik Kumpul
 • Early Warning System (EWS)
 • SITABA
+• Rehap Rekon
 • AI SINTA
 
 Silakan ketik nama istilah yang ingin Anda ketahui.

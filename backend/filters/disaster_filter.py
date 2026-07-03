@@ -53,13 +53,21 @@ def filter_bencana(daftar, pertanyaan):
         kota_data = (data.get("kota") or "").upper()
         kecamatan_data = (data.get("kecamatan") or "").upper()
         kelurahan_data = (data.get("kelurahan") or "").upper()
-        jalan_data = (data.get("road") or data.get("jalan") or "").upper()
+        jalan_data = (data.get("road") or "").upper()
 
         if provinsi_dicari and provinsi_data != provinsi_dicari:
             continue
 
-        if kota_dicari and kota_data not in kota_dicari:
-            continue
+        if kota_dicari:
+            cocok_kota = False
+
+            for kota_target in kota_dicari:
+                if kota_target in kota_data or kota_data in kota_target:
+                    cocok_kota = True
+                    break
+
+            if not cocok_kota:
+                continue
 
         if kecamatan_dicari and kecamatan_data not in kecamatan_dicari:
             continue

@@ -116,53 +116,44 @@ def ambil_provinsi_dari_pertanyaan(pertanyaan):
 # ===========================
 
 def ambil_kota_dari_pertanyaan(pertanyaan, daftar):
-
-    pertanyaan = pertanyaan.lower()
+    q = pertanyaan.lower()
 
     kota_ditemukan = []
-
     sudah_ada = set()
 
     for item in daftar:
-
         kota = (item.get("city") or "").strip()
 
         if not kota:
             continue
 
         kota_upper = kota.upper()
-
-        if kota_upper in sudah_ada:
-            continue
-
         kota_lower = kota.lower()
 
-        variasi = [
+        nama_bersih = (
+            kota_lower
+            .replace("kabupaten ", "")
+            .replace("kab. ", "")
+            .replace("kab ", "")
+            .replace("kota ", "")
+            .replace("kot. ", "")
+            .strip()
+        )
 
+        pola = [
             kota_lower,
-
-            kota_lower.replace("kabupaten ", ""),
-
-            kota_lower.replace("kab. ", ""),
-
-            kota_lower.replace("kab ", ""),
-
-            kota_lower.replace("kota ", ""),
-
-            kota_lower.replace("kot. ", ""),
-
+            nama_bersih,
+            f"kabupaten {nama_bersih}",
+            f"kab. {nama_bersih}",
+            f"kab {nama_bersih}",
+            f"kota {nama_bersih}",
         ]
 
-        for nama in variasi:
-
-            nama = nama.strip()
-
-            if nama and nama in pertanyaan:
-
-                kota_ditemukan.append(kota_upper)
-
-                sudah_ada.add(kota_upper)
-
+        for p in pola:
+            if p and p in q:
+                if kota_upper not in sudah_ada:
+                    kota_ditemukan.append(kota_upper)
+                    sudah_ada.add(kota_upper)
                 break
 
     return kota_ditemukan
@@ -300,3 +291,13 @@ def ekstrak_lokasi(pertanyaan, daftar):
         ),
 
     }
+
+lokasi = {
+
+    "provinsi": "PAPUA BARAT",
+
+    "kota": [
+        "KABUPATEN MANOKWARI"
+    ]
+
+}

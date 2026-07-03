@@ -10,9 +10,9 @@ from routers.disaster_router import (
     proses_infrastruktur_bencana,
 )
 from routers.knowledge_router import proses_knowledge
+from routers.resource_router import proses_resource
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
-
 
 @router.post("/")
 def chat(data: ChatRequest):
@@ -49,6 +49,10 @@ def chat(data: ChatRequest):
         reply = proses_infrastruktur_bencana(user_message)
         source = "API SITABA"
 
+    elif intent == "RESOURCE":
+        reply = proses_resource(user_message)
+        source = "API SITABA - Sumber Daya"
+
     elif intent in [
         "DISASTER_IMPACT",
         "DISASTER_POTENTIAL",
@@ -59,6 +63,7 @@ def chat(data: ChatRequest):
         "FIRST_AID",
         "PUBLIC_INFORMATION",
         "FAQ",
+        "GLOSSARY",
     ]:
         reply = proses_knowledge(user_message, intent)
         source = "Knowledge Base"

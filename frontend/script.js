@@ -11,12 +11,7 @@ const suggestedButtons = document.querySelectorAll(".suggested-questions button"
 let sessionId = localStorage.getItem("sitaba_session_id");
 
 if (!sessionId) {
-  sessionId =
-    "session_" +
-    Date.now() +
-    "_" +
-    Math.random().toString(36).substring(2, 8);
-
+  sessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
   localStorage.setItem("sitaba_session_id", sessionId);
 }
 
@@ -25,9 +20,7 @@ function safeText(value) {
 }
 
 function hideSuggestedQuestions() {
-  if (suggestedQuestions) {
-    suggestedQuestions.style.display = "none";
-  }
+  if (suggestedQuestions) suggestedQuestions.style.display = "none";
 }
 
 function addUserMessage(message) {
@@ -70,11 +63,11 @@ function addBotMessage(message) {
 
 async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
-
   if (!message) return;
 
-  hideSuggestedQuestions();
+  const visitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "{}");
 
+  hideSuggestedQuestions();
   addUserMessage(message);
   userInput.value = "";
 
@@ -82,53 +75,40 @@ async function sendMessage(customMessage = null) {
 
   try {
     const response = await fetch(API_CHAT_URL, {
-    method: "POST",
-    headers: {
+      method: "POST",
+      headers: {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "true"
-    },
-   body: JSON.stringify({
-    message: message,
-    sessionId: sessionId,
-    visitorName: visitor.nama || null,
-    visitorEmail: visitor.email || null
-  })
+      },
+      body: JSON.stringify({
+        message: message,
+        sessionId: sessionId,
+        visitorName: visitor.nama || null,
+        visitorEmail: visitor.email || null
+      })
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-      loadingBubble.innerText = safeText(
-        data.error || data.detail || "Terjadi kesalahan."
-      );
+      loadingBubble.innerText = safeText(data.error || data.detail || "Terjadi kesalahan.");
       return;
     }
 
-    loadingBubble.innerText = safeText(
-      data.reply || "Maaf, jawaban belum tersedia."
-    );
-
+    loadingBubble.innerText = safeText(data.reply || "Maaf, jawaban belum tersedia.");
   } catch (error) {
-    loadingBubble.innerText =
-      "Maaf, koneksi ke AI SITABA belum aktif.";
+    loadingBubble.innerText = "Maaf, koneksi ke AI SITABA belum aktif.";
   }
 }
 
 chatToggle.addEventListener("click", () => {
+  const visitor = localStorage.getItem("sitaba_visitor");
 
-    const visitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "{}");
-
-    if(visitor){
-
-        chatWidget.classList.remove("hidden");
-
-    }else{
-
-        document
-        .getElementById("prechatOverlay")
-        .classList.remove("hidden");
-
-    }
-
+  if (visitor) {
+    chatWidget.classList.remove("hidden");
+  } else {
+    document.getElementById("prechatOverlay").classList.remove("hidden");
+  }
 });
 
 sendButton.addEventListener("click", () => {
@@ -136,74 +116,40 @@ sendButton.addEventListener("click", () => {
 });
 
 userInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    sendMessage();
-  }
+  if (event.key === "Enter") sendMessage();
 });
 
 suggestedButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const question = button.dataset.question;
-    sendMessage(question);
+    sendMessage(button.dataset.question);
   });
 });
 
-document
-.getElementById("prechatClose")
-.addEventListener("click",()=>{
-
-    document
-    .getElementById("prechatOverlay")
-    .classList.add("hidden");
-
+document.getElementById("prechatClose").addEventListener("click", () => {
+  document.getElementById("prechatOverlay").classList.add("hidden");
 });
 
-document
-.getElementById("startChatButton")
-.addEventListener("click",()=>{
+document.getElementById("startChatButton").addEventListener("click", () => {
+  const nama = document.getElementById("visitorName").value.trim();
+  const email = document.getElementById("visitorEmail").value.trim();
 
-    const nama=document
-    .getElementById("visitorName")
-    .value.trim();
+  if (!nama) {
+    alert("Nama wajib diisi.");
+    return;
+  }
 
-    const email=document
-    .getElementById("visitorEmail")
-    .value.trim();
+  if (!email) {
+    alert("Email wajib diisi.");
+    return;
+  }
 
-    if(!nama){
+  localStorage.setItem("sitaba_visitor", JSON.stringify({ nama, email }));
 
-        alert("Nama wajib diisi.");
-
-        return;
-    }
-
-    if(!email){
-
-        alert("Email wajib diisi.");
-
-        return;
-    }
-
-    localStorage.setItem(
-        "sitaba_visitor",
-        JSON.stringify({
-            nama,
-            email
-        })
-    );
-
-    document
-    .getElementById("prechatOverlay")
-    .classList.add("hidden");
-
-    chatWidget.classList.remove("hidden");
+  document.getElementById("prechatOverlay").classList.add("hidden");
+  chatWidget.classList.remove("hidden");
 });
 
 window.addEventListener("DOMContentLoaded", () => {
-  const visitor = localStorage.getItem("sitaba_visitor");
-
-  if (!visitor) {
-    chatWidget.classList.add("hidden");
-    document.getElementById("prechatOverlay").classList.add("hidden");
-  }
+  chatWidget.classList.add("hidden");
+  document.getElementById("prechatOverlay").classList.add("hidden");
 });

@@ -215,3 +215,9 @@ def debug_all():
         "timestamp": datetime.now().isoformat()
 
     }
+
+from services.sitaba_service import debug_assets
+
+@router.get("/assets")
+def cek_assets():
+    return debug_assets()

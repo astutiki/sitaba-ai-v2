@@ -89,3 +89,29 @@ def system_status():
         },
         "timestamp": datetime.now().isoformat()
     }
+
+from fastapi import APIRouter
+from database.supabase_client import supabase
+
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
+
+@router.get("/summary")
+def dashboard_summary():
+    try:
+        chat = supabase.table("chat_history").select("id").execute()
+        sessions = supabase.table("chat_sessions").select("id").execute()
+
+        return {
+            "total_users": len(sessions.data or []),
+            "total_chat": len(chat.data or []),
+            "avg_response": "0s"
+        }
+
+    except Exception as e:
+        return {
+            "total_users": 0,
+            "total_chat": 0,
+            "avg_response": "0s",
+            "error": str(e)
+        }

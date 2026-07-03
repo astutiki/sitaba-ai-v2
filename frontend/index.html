@@ -27,8 +27,29 @@
         <button type="button">Eksplorasi</button>
     </section>
 
-    <div class="chat-widget hidden" id="chatWidget">
+    <div class="prechat-overlay hidden" id="prechatOverlay">
+        <div class="prechat-modal">
+            <button class="prechat-close" id="prechatClose">×</button>
 
+            <div class="prechat-title">
+                <img src="assets/sinta-1.png" alt="">
+                <div>
+                    <h2>Halo! Ada yang bisa SINTA bantu?</h2>
+                    <p>Isi form di bawah untuk terhubung dengan Asisten Sigap Tanggap Bencana</p>
+                </div>
+            </div>
+
+            <label>Nama</label>
+            <input id="visitorName" type="text">
+
+            <label>Email</label>
+            <input id="visitorEmail" type="email">
+
+            <button id="startChatButton" class="prechat-submit">Kirim Pesan</button>
+        </div>
+    </div>
+
+    <div class="chat-widget hidden" id="chatWidget">
         <div class="chat-header">
             <div class="avatar">
                 <img src="assets/sinta-1.png" alt="">

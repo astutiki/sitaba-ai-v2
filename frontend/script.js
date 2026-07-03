@@ -51,7 +51,7 @@ function addBotMessage(message) {
   icon.className = "bot-icon";
 
   const img = document.createElement("img");
-  img.src = "/assets/sinta-1.png";
+  img.src = "assets/sinta-1.png";
   img.alt = "Logo SINTA";
 
   icon.appendChild(img);
@@ -87,11 +87,12 @@ async function sendMessage(customMessage = null) {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "true"
     },
-    body: JSON.stringify({
-        message: message,
-        sessionId: sessionId
-    })
-    });
+   body: JSON.stringify({
+    message: message,
+    sessionId: sessionId,
+    visitorName: visitor.nama || null,
+    visitorEmail: visitor.email || null
+  })
 
     const data = await response.json();
 
@@ -113,7 +114,21 @@ async function sendMessage(customMessage = null) {
 }
 
 chatToggle.addEventListener("click", () => {
-  chatWidget.classList.toggle("hidden");
+
+    const visitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "{}");
+
+    if(visitor){
+
+        chatWidget.classList.remove("hidden");
+
+    }else{
+
+        document
+        .getElementById("prechatOverlay")
+        .classList.remove("hidden");
+
+    }
+
 });
 
 sendButton.addEventListener("click", () => {
@@ -131,4 +146,56 @@ suggestedButtons.forEach((button) => {
     const question = button.dataset.question;
     sendMessage(question);
   });
+});
+
+document
+.getElementById("prechatClose")
+.addEventListener("click",()=>{
+
+    document
+    .getElementById("prechatOverlay")
+    .classList.add("hidden");
+
+});
+
+document
+.getElementById("startChatButton")
+.addEventListener("click",()=>{
+
+    const nama=document
+    .getElementById("visitorName")
+    .value.trim();
+
+    const email=document
+    .getElementById("visitorEmail")
+    .value.trim();
+
+    if(!nama){
+
+        alert("Nama wajib diisi.");
+
+        return;
+    }
+
+    if(!email){
+
+        alert("Email wajib diisi.");
+
+        return;
+    }
+
+    localStorage.setItem(
+        "sitaba_visitor",
+        JSON.stringify({
+            nama,
+            email
+        })
+    );
+
+    document
+    .getElementById("prechatOverlay")
+    .classList.add("hidden");
+
+    chatWidget.classList.remove("hidden");
+
 });

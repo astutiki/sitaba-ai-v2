@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://constable-krypton-sketch.ngrok-free.dev";
 
 let token = localStorage.getItem("sitaba_token");
 let editingId = null;
@@ -53,11 +53,11 @@ async function apiFetch(path, options = {}) {
 }
 
 async function loadDashboard() {
-  const data = await apiFetch("/dashboard");
+  const data = await apiFetch("/dashboard/summary");
 
-  document.getElementById("totalUser").innerText = safeText(data.totalUser);
-  document.getElementById("totalChat").innerText = safeText(data.totalChat);
-  document.getElementById("avgResponse").innerText = safeText(data.avgResponse);
+  document.getElementById("totalUser").innerText = safeText(data.total_users);
+  document.getElementById("totalChat").innerText = safeText(data.total_chat);
+  document.getElementById("avgResponse").innerText = safeText(data.avg_response);
 }
 
 async function loadQuickChat() {

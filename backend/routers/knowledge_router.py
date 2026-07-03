@@ -12,6 +12,7 @@ from knowledge.emergency_contact import jawab_kontak_darurat
 from knowledge.first_aid import jawab_pertolongan_pertama
 from knowledge.public_information import jawab_informasi_publik
 from knowledge.faq import jawab_faq
+from knowledge.glossary import jawab_glosarium
 
 
 def proses_knowledge(pertanyaan: str, intent: str):
@@ -43,4 +44,7 @@ def proses_knowledge(pertanyaan: str, intent: str):
     if intent == "FAQ":
         return jawab_faq(pertanyaan)
 
-    return None
+    if intent == "GLOSSARY":
+        return jawab_glosarium(pertanyaan)
+
+    return "Maaf, jawaban belum tersedia."

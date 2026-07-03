@@ -8,19 +8,35 @@ const chatBody = document.getElementById("chatBody");
 const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
 
-let sessionId = localStorage.getItem("sitaba_session_id");
+const prechatOverlay = document.getElementById("prechatOverlay");
+const prechatClose = document.getElementById("prechatClose");
+const startChatButton = document.getElementById("startChatButton");
+const visitorName = document.getElementById("visitorName");
+const visitorEmail = document.getElementById("visitorEmail");
 
-if (!sessionId) {
-  sessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
-  localStorage.setItem("sitaba_session_id", sessionId);
-}
+let currentVisitor = null;
+let sessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
 
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
 function hideSuggestedQuestions() {
   if (suggestedQuestions) suggestedQuestions.style.display = "none";
+}
+
+function showPrechat() {
+  prechatOverlay.classList.remove("hidden");
+  chatWidget.classList.add("hidden");
+}
+
+function showChat() {
+  prechatOverlay.classList.add("hidden");
+  chatWidget.classList.remove("hidden");
 }
 
 function addUserMessage(message) {
@@ -65,8 +81,6 @@ async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
   if (!message) return;
 
-  const visitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "{}");
-
   hideSuggestedQuestions();
   addUserMessage(message);
   userInput.value = "";
@@ -83,8 +97,8 @@ async function sendMessage(customMessage = null) {
       body: JSON.stringify({
         message: message,
         sessionId: sessionId,
-        visitorName: visitor.nama || null,
-        visitorEmail: visitor.email || null
+        visitorName: currentVisitor?.nama || null,
+        visitorEmail: currentVisitor?.email || null
       })
     });
 
@@ -102,13 +116,38 @@ async function sendMessage(customMessage = null) {
 }
 
 chatToggle.addEventListener("click", () => {
-  const visitor = localStorage.getItem("sitaba_visitor");
-
-  if (visitor) {
-    chatWidget.classList.remove("hidden");
+  if (currentVisitor) {
+    showChat();
   } else {
-    document.getElementById("prechatOverlay").classList.remove("hidden");
+    showPrechat();
   }
+});
+
+prechatClose.addEventListener("click", () => {
+  prechatOverlay.classList.add("hidden");
+});
+
+startChatButton.addEventListener("click", () => {
+  const nama = visitorName.value.trim();
+  const email = visitorEmail.value.trim();
+
+  if (!nama) {
+    alert("Nama wajib diisi.");
+    return;
+  }
+
+  if (!email) {
+    alert("Email wajib diisi.");
+    return;
+  }
+
+  if (!isValidEmail(email)) {
+    alert("Format email tidak valid. Contoh: nama@email.com");
+    return;
+  }
+
+  currentVisitor = { nama, email };
+  showChat();
 });
 
 sendButton.addEventListener("click", () => {
@@ -125,31 +164,8 @@ suggestedButtons.forEach((button) => {
   });
 });
 
-document.getElementById("prechatClose").addEventListener("click", () => {
-  document.getElementById("prechatOverlay").classList.add("hidden");
-});
-
-document.getElementById("startChatButton").addEventListener("click", () => {
-  const nama = document.getElementById("visitorName").value.trim();
-  const email = document.getElementById("visitorEmail").value.trim();
-
-  if (!nama) {
-    alert("Nama wajib diisi.");
-    return;
-  }
-
-  if (!email) {
-    alert("Email wajib diisi.");
-    return;
-  }
-
-  localStorage.setItem("sitaba_visitor", JSON.stringify({ nama, email }));
-
-  document.getElementById("prechatOverlay").classList.add("hidden");
-  chatWidget.classList.remove("hidden");
-});
-
 window.addEventListener("DOMContentLoaded", () => {
+  currentVisitor = null;
   chatWidget.classList.add("hidden");
-  document.getElementById("prechatOverlay").classList.add("hidden");
+  prechatOverlay.classList.add("hidden");
 });

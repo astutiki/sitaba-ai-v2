@@ -1,0 +1,33 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/frontend/dashboard/dashboard.html"
+    },
+    {
+      "source": "/style.css",
+      "destination": "/frontend/style.css"
+    },
+    {
+      "source": "/script.js",
+      "destination": "/frontend/script.js"
+    },
+    {
+      "source": "/dashboard.js",
+      "destination": "/frontend/dashboard/dashboard.js"
+    },
+     {
+      "source": "/dashboard.css",
+      "destination": "/frontend/dashboard/dashboard.css"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    }
+  ]
+}

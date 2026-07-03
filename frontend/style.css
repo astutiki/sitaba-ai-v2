@@ -39,10 +39,10 @@ body {
 }
 
 .chat-widget {
-  position: fixed;
+ position: fixed;
   right: 42px;
-  top: 26px;
-  width: 540px;
+  top: 24px;
+  width: 520px;
   height: 855px;
   background: #f5f7fb;
   border-radius: 20px;
@@ -138,7 +138,7 @@ body {
 .bot-message,
 .user-message {
   width: fit-content;
-  max-width: 390px;
+  max-width: 360px;
   line-height: 1.6;
   font-size: 15px;
   word-break: break-word;
@@ -155,7 +155,7 @@ body {
 }
 
 .welcome-message {
-  max-width: 390px;
+  ax-width: 360px;
   text-align: left;
 }
 
@@ -259,7 +259,7 @@ body {
 }
 
 .prechat-modal{
-    width:480px;
+    width:520px;
     background:#fff;
     border-radius:20px;
     padding:28px;

@@ -1,3 +1,5 @@
+const LOGIN_KEY = "sitaba_admin_login";
+
 const loginPage = document.getElementById("loginPage");
 const dashboardPage = document.getElementById("dashboardPage");
 const loginButton = document.getElementById("loginButton");
@@ -17,13 +19,8 @@ const saveQuickButton = document.getElementById("saveQuickButton");
 const questionInput = document.getElementById("questionInput");
 const statusInput = document.getElementById("statusInput");
 
-const pageTitle = document.getElementById("pageTitle");
-const pageSubtitle = document.getElementById("pageSubtitle");
 const tableTitle = document.getElementById("tableTitle");
 const tableDesc = document.getElementById("tableDesc");
-
-localStorage.setItem(LOGIN_KEY, "true");
-showDashboard();
 
 let currentPage = "dashboard";
 
@@ -44,32 +41,29 @@ function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
+function getChatbotVisitors() {
+  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+  const singleVisitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "null");
+
+  if (Array.isArray(visitors) && visitors.length > 0) return visitors;
+  if (singleVisitor && singleVisitor.email) return [singleVisitor];
+
+  return [];
+}
+
+function loadVisitorDashboard() {
+  const visitors = getChatbotVisitors();
+  document.getElementById("totalUsers").innerText = visitors.length;
+}
+
 function showDashboard() {
   loginPage.classList.add("hidden");
   dashboardPage.classList.remove("hidden");
   renderRecent();
   renderChart();
+  loadVisitorDashboard();
   renderQuickChat();
 }
-
-loginButton.addEventListener("click", () => {
-  const user = adminUser.value.trim();
-  const pass = adminPass.value.trim();
-
-  if (user !== "admin" || pass !== "admin123") {
-    alert("Username atau password salah.");
-    return;
-  }
-
-  localStorage.setItem(LOGIN_KEY, "true");
-showDashboard();
-});
-
-logoutButton.addEventListener("click", () => {
-    localStorage.removeItem(LOGIN_KEY);
-    dashboardPage.classList.add("hidden");
-    loginPage.classList.remove("hidden");
-});
 
 function renderRecent() {
   recentList.innerHTML = recentChats.map(item => `
@@ -107,6 +101,11 @@ function renderChart() {
 }
 
 function renderQuickChat() {
+  currentPage = "quick";
+
+  tableTitle.innerText = "Quick Chat";
+  tableDesc.innerText = "Kelola pertanyaan cepat yang tampil di chatbot SINTA.";
+
   const keyword = searchInput.value.toLowerCase();
 
   const data = quickChats.filter(item =>
@@ -145,6 +144,8 @@ function renderQuickChat() {
 }
 
 function renderUsers() {
+  currentPage = "users";
+
   const visitors = getChatbotVisitors();
 
   tableTitle.innerText = "User Pengunjung";
@@ -179,19 +180,13 @@ function renderUsers() {
 }
 
 function setPage(page) {
-  currentPage = page;
-
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.page === page);
   });
 
   if (page === "users") {
-    tableTitle.innerText = "User Pengunjung";
-    tableDesc.innerText = "Daftar pengguna yang mengakses chatbot SINTA.";
     renderUsers();
   } else {
-    tableTitle.innerText = "Quick Chat";
-    tableDesc.innerText = "Kelola pertanyaan cepat yang tampil di chatbot SINTA.";
     renderQuickChat();
   }
 }
@@ -206,12 +201,53 @@ function deleteQuestion(index) {
   renderQuickChat();
 }
 
+function updateClock() {
+  const now = new Date();
+
+  const tanggal = now.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  const jam = now.toLocaleTimeString("id-ID");
+
+  const el = document.getElementById("currentDateTime");
+  if (el) {
+    el.innerHTML = `${tanggal}<br><small>${jam} WIB</small>`;
+  }
+}
+
+loginButton.addEventListener("click", () => {
+  const user = adminUser.value.trim();
+  const pass = adminPass.value.trim();
+
+  if (user !== "admin" || pass !== "admin123") {
+    alert("Username atau password salah.");
+    return;
+  }
+
+  localStorage.setItem(LOGIN_KEY, "true");
+  showDashboard();
+});
+
+logoutButton.addEventListener("click", () => {
+  localStorage.removeItem(LOGIN_KEY);
+  dashboardPage.classList.add("hidden");
+  loginPage.classList.remove("hidden");
+});
+
 document.querySelectorAll(".nav-item").forEach(btn => {
   btn.addEventListener("click", () => setPage(btn.dataset.page));
 });
 
 searchInput.addEventListener("input", () => {
-  if (currentPage !== "users") renderQuickChat();
+  if (currentPage === "users") {
+    renderUsers();
+  } else {
+    renderQuickChat();
+  }
 });
 
 addQuickButton.addEventListener("click", () => {
@@ -241,87 +277,13 @@ saveQuickButton.addEventListener("click", () => {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
+  updateClock();
+  setInterval(updateClock, 1000);
 
-    // cek session login
-    if(localStorage.getItem(LOGIN_KEY) === "true"){
-        showDashboard();
-    }else{
-        loginPage.classList.remove("hidden");
-        dashboardPage.classList.add("hidden");
-    }
+  if (localStorage.getItem(LOGIN_KEY) === "true") {
+    showDashboard();
+  } else {
+    loginPage.classList.remove("hidden");
+    dashboardPage.classList.add("hidden");
+  }
 });
-
-function updateClock(){
-
-    const now = new Date();
-
-    const hari = [
-        "Minggu",
-        "Senin",
-        "Selasa",
-        "Rabu",
-        "Kamis",
-        "Jumat",
-        "Sabtu"
-    ];
-
-    const bulan = [
-        "Januari",
-        "Februari",
-        "Maret",
-        "April",
-        "Mei",
-        "Juni",
-        "Juli",
-        "Agustus",
-        "September",
-        "Oktober",
-        "November",
-        "Desember"
-    ];
-
-    const tanggal =
-        hari[now.getDay()] + ", " +
-        now.getDate() + " " +
-        bulan[now.getMonth()] + " " +
-        now.getFullYear();
-
-    const jam =
-        String(now.getHours()).padStart(2,"0") + ":" +
-        String(now.getMinutes()).padStart(2,"0") + ":" +
-        String(now.getSeconds()).padStart(2,"0");
-
-    document.getElementById("currentDateTime").innerHTML =
-        tanggal + "<br><small>" + jam + " WIB</small>";
-
-}
-
-updateClock();
-
-setInterval(updateClock,1000);
-
-function getChatbotVisitors() {
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-  const singleVisitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "null");
-
-  if (Array.isArray(visitors) && visitors.length > 0) {
-    return visitors;
-  }
-
-  if (singleVisitor && singleVisitor.email) {
-    return [singleVisitor];
-  }
-
-  return [];
-}
-
-function loadVisitorDashboard() {
-  const visitors = getChatbotVisitors();
-
-  document.getElementById("totalUsers").innerText = visitors.length;
-
-  if (typeof renderUsers === "function") {
-    renderUsers();
-  }
-}
-loadVisitorDashboard();

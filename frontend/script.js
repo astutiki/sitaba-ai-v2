@@ -197,5 +197,13 @@ document
     .classList.add("hidden");
 
     chatWidget.classList.remove("hidden");
+});
 
+window.addEventListener("DOMContentLoaded", () => {
+  const visitor = localStorage.getItem("sitaba_visitor");
+
+  if (!visitor) {
+    chatWidget.classList.add("hidden");
+    document.getElementById("prechatOverlay").classList.add("hidden");
+  }
 });

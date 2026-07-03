@@ -1,209 +1,208 @@
-const API_URL = "https://constable-krypton-sketch.ngrok-free.dev";
+let quickChats = [
+  {
+    question: "Sebutkan tahun kejadian banjir di Bali?",
+    status: "Aktif"
+  },
+  {
+    question: "Longsor di Jawa Timur terjadi kapan?",
+    status: "Aktif"
+  },
+  {
+    question: "Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?",
+    status: "Aktif"
+  }
+];
 
-let token = localStorage.getItem("sitaba_token");
-let editingId = null;
+let visitors = [
+  {
+    name: "Anasta",
+    email: "anasta@email.com",
+    total: 3
+  }
+];
+
+const tableArea = document.getElementById("tableArea");
+const pageTitle = document.getElementById("pageTitle");
+const pageDesc = document.getElementById("pageDesc");
+const searchInput = document.getElementById("searchInput");
+
+const modal = document.getElementById("modal");
+const addButton = document.getElementById("addButton");
+const closeModal = document.getElementById("closeModal");
+const saveQuestion = document.getElementById("saveQuestion");
+const questionInput = document.getElementById("questionInput");
+const statusInput = document.getElementById("statusInput");
+
+document.getElementById("totalUser").innerText = visitors.length;
+document.getElementById("totalChat").innerText = quickChats.length;
+document.getElementById("avgResponse").innerText = "1.2s";
+
+let currentPage = "quick";
 
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
-async function loginAdmin() {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: "adminsitaba",
-      password: "admin123"
-    })
+function renderQuickChat() {
+  pageTitle.innerText = "Quick Chat";
+  pageDesc.innerText = "Kelola daftar pertanyaan cepat yang tampil di chatbot SINTA.";
+
+  const keyword = searchInput.value.toLowerCase();
+
+  const rows = quickChats
+    .filter(item => item.question.toLowerCase().includes(keyword))
+    .map((item, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${safeText(item.question)}</td>
+        <td>
+          <span class="badge ${item.status === "Aktif" ? "active-badge" : "off-badge"}">
+            ${item.status}
+          </span>
+        </td>
+        <td>
+          <button class="action-btn" onclick="toggleStatus(${index})">Ubah Status</button>
+        </td>
+      </tr>
+    `)
+    .join("");
+
+  tableArea.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Question</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows || `<tr><td colspan="4" class="empty">Data tidak ditemukan.</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderVisitors() {
+  pageTitle.innerText = "User Pengunjung";
+  pageDesc.innerText = "Daftar pengunjung yang menggunakan chatbot SINTA.";
+
+  tableArea.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Total Chat</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${visitors.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${safeText(item.name)}</td>
+            <td>${safeText(item.email)}</td>
+            <td>${item.total}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderLogs() {
+  pageTitle.innerText = "Log Percakapan";
+  pageDesc.innerText = "Riwayat pertanyaan yang masuk ke AI SITABA.";
+
+  tableArea.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Waktu</th>
+          <th>User</th>
+          <th>Pertanyaan</th>
+          <th>Intent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Hari ini</td>
+          <td>Anasta</td>
+          <td>Sebutkan tahun kejadian banjir di Bali?</td>
+          <td>DISASTER</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSetting() {
+  pageTitle.innerText = "Pengaturan";
+  pageDesc.innerText = "Pengaturan tampilan dan fitur chatbot SINTA.";
+
+  tableArea.innerHTML = `
+    <div class="empty">
+      Pengaturan lanjutan dapat dihubungkan ke Supabase pada tahap berikutnya.
+    </div>
+  `;
+}
+
+function setPage(page) {
+  currentPage = page;
+
+  document.querySelectorAll(".menu").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === page);
   });
 
-  const data = await res.json();
+  if (page === "quick" || page === "assistant") renderQuickChat();
+  if (page === "visitor") renderVisitors();
+  if (page === "logs") renderLogs();
+  if (page === "setting") renderSetting();
+}
 
-  if (data.token) {
-    token = data.token;
-    localStorage.setItem("sitaba_token", token);
-    return token;
+function toggleStatus(index) {
+  quickChats[index].status = quickChats[index].status === "Aktif" ? "Nonaktif" : "Aktif";
+  renderQuickChat();
+}
+
+document.querySelectorAll(".menu").forEach(btn => {
+  btn.addEventListener("click", () => setPage(btn.dataset.page));
+});
+
+searchInput.addEventListener("input", () => {
+  if (currentPage === "quick" || currentPage === "assistant") {
+    renderQuickChat();
   }
+});
 
-  throw new Error("Login gagal");
-}
+addButton.addEventListener("click", () => {
+  modal.classList.remove("hidden");
+});
 
-async function apiFetch(path, options = {}) {
-  if (!token) {
-    await loginAdmin();
-  }
+closeModal.addEventListener("click", () => {
+  modal.classList.add("hidden");
+});
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {})
-    }
-  });
+saveQuestion.addEventListener("click", () => {
+  const question = questionInput.value.trim();
 
-  if (res.status === 401 || res.status === 403) {
-    localStorage.removeItem("sitaba_token");
-    token = null;
-    await loginAdmin();
-    return apiFetch(path, options);
-  }
-
-  return res.json();
-}
-
-async function loadDashboard() {
-  const data = await apiFetch("/dashboard/summary");
-
-  document.getElementById("totalUser").innerText = safeText(data.total_users);
-  document.getElementById("totalChat").innerText = safeText(data.total_chat);
-  document.getElementById("avgResponse").innerText = safeText(data.avg_response);
-}
-
-async function loadQuickChat() {
-  const data = await apiFetch("/quickchat");
-  const tbody = document.getElementById("quickChatTable");
-
-  tbody.innerHTML = "";
-
-  data.forEach((item, index) => {
-    const row = document.createElement("tr");
-
-    const no = document.createElement("td");
-    no.innerText = index + 1;
-
-    const question = document.createElement("td");
-    question.innerText = safeText(item.question);
-
-    const status = document.createElement("td");
-    const toggle = document.createElement("button");
-    toggle.className = item.status === "Aktif" ? "toggle active" : "toggle";
-    toggle.onclick = () => toggleStatus(item.id);
-    status.appendChild(toggle);
-
-    const action = document.createElement("td");
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "action-btn";
-    deleteBtn.innerText = "🗑";
-    deleteBtn.onclick = () => deleteQuickChat(item.id);
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "action-btn";
-    editBtn.innerText = "✎";
-    editBtn.onclick = () => openEditModal(item);
-
-    action.appendChild(deleteBtn);
-    action.appendChild(editBtn);
-
-    row.appendChild(no);
-    row.appendChild(question);
-    row.appendChild(status);
-    row.appendChild(action);
-
-    tbody.appendChild(row);
-  });
-}
-
-async function loadUsers() {
-  const data = await apiFetch("/users");
-  const tbody = document.getElementById("userTable");
-
-  tbody.innerHTML = "";
-
-  data.forEach((item, index) => {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${index + 1}</td>
-      <td></td>
-      <td></td>
-      <td><button class="action-btn">👁</button></td>
-    `;
-
-    row.children[1].innerText = safeText(item.name);
-    row.children[2].innerText = safeText(item.email);
-
-    tbody.appendChild(row);
-  });
-}
-
-function openAddModal() {
-  editingId = null;
-  document.getElementById("modalTitle").innerText = "Tambah Quick Chat";
-  document.getElementById("quickInput").value = "";
-  document.getElementById("modalOverlay").classList.remove("hidden");
-}
-
-function openEditModal(item) {
-  editingId = item.id;
-  document.getElementById("modalTitle").innerText = "Edit Quick Chat";
-  document.getElementById("quickInput").value = safeText(item.question);
-  document.getElementById("modalOverlay").classList.remove("hidden");
-}
-
-function closeModal() {
-  document.getElementById("modalOverlay").classList.add("hidden");
-}
-
-async function saveQuickChat() {
-  const question = document.getElementById("quickInput").value.trim();
-
-  if (question.length < 10 || question.length > 200) {
-    alert("Pertanyaan harus 10-200 karakter.");
+  if (!question) {
+    alert("Pertanyaan wajib diisi.");
     return;
   }
 
-  if (editingId) {
-    await apiFetch(`/quickchat/${editingId}`, {
-      method: "PUT",
-      body: JSON.stringify({ question })
-    });
-  } else {
-    await apiFetch("/quickchat", {
-      method: "POST",
-      body: JSON.stringify({ question })
-    });
-  }
-
-  closeModal();
-  loadQuickChat();
-}
-
-async function toggleStatus(id) {
-  await apiFetch(`/quickchat/${id}/toggle`, {
-    method: "PUT"
-  });
-  loadQuickChat();
-}
-
-async function deleteQuickChat(id) {
-  if (!confirm("Hapus quick chat ini?")) return;
-
-  await apiFetch(`/quickchat/${id}`, {
-    method: "DELETE"
+  quickChats.push({
+    question,
+    status: statusInput.value
   });
 
-  loadQuickChat();
-}
+  questionInput.value = "";
+  modal.classList.add("hidden");
 
-function showTab(tab) {
-  document.getElementById("quickSection").classList.toggle("hidden", tab !== "quick");
-  document.getElementById("userSection").classList.toggle("hidden", tab !== "users");
+  document.getElementById("totalChat").innerText = quickChats.length;
+  renderQuickChat();
+});
 
-  document.getElementById("tabQuick").classList.toggle("active", tab === "quick");
-  document.getElementById("tabUsers").classList.toggle("active", tab === "users");
-}
-
-function logout() {
-  localStorage.removeItem("sitaba_token");
-  location.reload();
-}
-
-async function init() {
-  await loadDashboard();
-  await loadQuickChat();
-  await loadUsers();
-}
-
-init();
+setPage("quick");

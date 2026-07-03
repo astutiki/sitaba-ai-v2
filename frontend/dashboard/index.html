@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard SINTA</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">PU</div>
+      <div>
+        <h2>SITABA</h2>
+        <p>Smart Assistant</p>
+      </div>
+    </div>
+
+    <button class="menu active" data-page="assistant">🤖 Smart Assistant</button>
+    <button class="menu" data-page="quick">💬 Quick Chat</button>
+    <button class="menu" data-page="visitor">👥 User Pengunjung</button>
+    <button class="menu" data-page="logs">📊 Log Percakapan</button>
+    <button class="menu" data-page="setting">⚙️ Pengaturan</button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <p>Dashboard Monitoring</p>
+        <h1>Smart Assistant SITABA</h1>
+      </div>
+
+      <button class="power">⏻</button>
+    </header>
+
+    <section class="stats">
+      <div class="stat-card">
+        <span class="icon green">👥</span>
+        <p>User Pengunjung</p>
+        <h2 id="totalUser">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <span class="icon orange">💬</span>
+        <p>Total Percakapan</p>
+        <h2 id="totalChat">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <span class="icon blue">⏱</span>
+        <p>Rata-rata Respon</p>
+        <h2 id="avgResponse">0s</h2>
+      </div>
+    </section>
+
+    <section class="content-card">
+      <div class="toolbar">
+        <div>
+          <h2 id="pageTitle">Quick Chat</h2>
+          <p id="pageDesc">Kelola pertanyaan cepat yang tampil di chatbot SINTA.</p>
+        </div>
+
+        <div class="actions">
+          <input id="searchInput" type="text" placeholder="Cari data...">
+          <button id="addButton">+ Tambah</button>
+        </div>
+      </div>
+
+      <div id="tableArea"></div>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="modal">
+    <div class="modal-box">
+      <button id="closeModal" class="close">×</button>
+      <h2>Tambah Quick Chat</h2>
+
+      <label>Pertanyaan</label>
+      <input id="questionInput" type="text" placeholder="Masukkan pertanyaan quick chat">
+
+      <label>Status</label>
+      <select id="statusInput">
+        <option value="Aktif">Aktif</option>
+        <option value="Nonaktif">Nonaktif</option>
+      </select>
+
+      <button id="saveQuestion">Simpan</button>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

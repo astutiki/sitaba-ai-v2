@@ -1,83 +1,179 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard SINTA</title>
-  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="dashboard.css" />
 </head>
 
 <body>
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">PU</div>
-      <div>
-        <h2>SITABA</h2>
-        <p>Smart Assistant</p>
-      </div>
-    </div>
-
-    <button class="menu active" data-page="assistant">🤖 Smart Assistant</button>
-    <button class="menu" data-page="quick">💬 Quick Chat</button>
-    <button class="menu" data-page="visitor">👥 User Pengunjung</button>
-    <button class="menu" data-page="logs">📊 Log Percakapan</button>
-    <button class="menu" data-page="setting">⚙️ Pengaturan</button>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <div>
-        <p>Dashboard Monitoring</p>
-        <h1>Smart Assistant SITABA</h1>
-      </div>
-
-      <button class="power">⏻</button>
-    </header>
-
-    <section class="stats">
-      <div class="stat-card">
-        <span class="icon green">👥</span>
-        <p>User Pengunjung</p>
-        <h2 id="totalUser">0</h2>
-      </div>
-
-      <div class="stat-card">
-        <span class="icon orange">💬</span>
-        <p>Total Percakapan</p>
-        <h2 id="totalChat">0</h2>
-      </div>
-
-      <div class="stat-card">
-        <span class="icon blue">⏱</span>
-        <p>Rata-rata Respon</p>
-        <h2 id="avgResponse">0s</h2>
-      </div>
-    </section>
-
-    <section class="content-card">
-      <div class="toolbar">
+  <!-- LOGIN -->
+  <section class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="logo-box">PU</div>
         <div>
-          <h2 id="pageTitle">Quick Chat</h2>
-          <p id="pageDesc">Kelola pertanyaan cepat yang tampil di chatbot SINTA.</p>
-        </div>
-
-        <div class="actions">
-          <input id="searchInput" type="text" placeholder="Cari data...">
-          <button id="addButton">+ Tambah</button>
+          <h1>SITABA</h1>
+          <p>Smart Assistant Dashboard</p>
         </div>
       </div>
 
-      <div id="tableArea"></div>
-    </section>
-  </main>
+      <h2>Login Admin</h2>
+      <p class="muted">Masuk untuk mengelola Smart Assistant SITABA.</p>
 
-  <div class="modal hidden" id="modal">
-    <div class="modal-box">
-      <button id="closeModal" class="close">×</button>
+      <label>Username</label>
+      <input id="adminUser" type="text" placeholder="admin" />
+
+      <label>Password</label>
+      <input id="adminPass" type="password" placeholder="admin123" />
+
+      <button id="loginButton">Masuk Dashboard</button>
+      <small>Demo login: <b>admin</b> / <b>admin123</b></small>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="dashboard hidden" id="dashboardPage">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-box">PU</div>
+        <div>
+          <h2>SITABA</h2>
+          <p>Smart Assistant</p>
+        </div>
+      </div>
+
+      <nav>
+        <button class="nav-item active" data-page="dashboard">⌂ Dashboard</button>
+        <button class="nav-item" data-page="assistant">◎ Smart Assistant</button>
+        <button class="nav-item" data-page="quick">⌕ Quick Chat</button>
+        <button class="nav-item" data-page="users">♙ User Pengunjung</button>
+        <button class="nav-item" data-page="logs">▤ Log Percakapan</button>
+        <button class="nav-item" data-page="report">▧ Laporan</button>
+        <button class="nav-item" data-page="resource">✣ Sumber Daya</button>
+        <button class="nav-item" data-page="master">☷ Master Data</button>
+        <button class="nav-item" data-page="settings">⚙ Pengaturan</button>
+      </nav>
+
+      <div class="admin-card">
+        <div class="admin-avatar">AD</div>
+        <div>
+          <strong>Admin SITABA</strong>
+          <span>admin@sitaba.go.id</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Monitoring aktivitas Smart Assistant SITABA</p>
+        </div>
+
+        <div class="top-actions">
+          <button class="date-btn" id="currentDateTime"></button>
+          <button class="icon-btn">🔔<span>3</span></button>
+          <button class="logout-btn" id="logoutButton">⏻</button>
+        </div>
+      </header>
+
+      <section class="stats">
+        <div class="stat-card">
+          <div class="stat-icon user">♙</div>
+          <div>
+            <p>User Pengunjung</p>
+            <h2 id="totalUsers">1.248</h2>
+            <small class="up">↑ 12.5% dari 7 hari terakhir</small>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon chat">💬</div>
+          <div>
+            <p>Total Percakapan</p>
+            <h2 id="totalChats">3.456</h2>
+            <small class="up">↑ 8.4% dari 7 hari terakhir</small>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon time">◷</div>
+          <div>
+            <p>Rata-rata Respon</p>
+            <h2 id="avgResponse">1.32s</h2>
+            <small class="down">↓ 5.1% lebih cepat</small>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon today">↗</div>
+          <div>
+            <p>Percakapan Hari Ini</p>
+            <h2 id="todayChats">256</h2>
+            <small class="up">↑ 15.3% dibanding kemarin</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel chart-panel">
+          <div class="panel-head">
+            <h3>Grafik Percakapan</h3>
+            <select id="rangeSelect">
+              <option>7 Hari Terakhir</option>
+              <option>30 Hari Terakhir</option>
+            </select>
+          </div>
+
+          <div class="chart-box">
+            <svg viewBox="0 0 700 260" class="chart">
+              <polyline id="chartLine" points="" fill="none" stroke="#2478ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              <polygon id="chartArea" points="" fill="rgba(36,120,255,.14)"></polygon>
+              <g id="chartDots"></g>
+            </svg>
+            <div class="chart-labels">
+              <span>15 Mei</span><span>16 Mei</span><span>17 Mei</span><span>18 Mei</span><span>19 Mei</span><span>20 Mei</span><span>21 Mei</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel recent-panel">
+          <div class="panel-head">
+            <h3>Percakapan Terbaru</h3>
+            <button>Lihat Semua</button>
+          </div>
+          <div id="recentList" class="recent-list"></div>
+        </div>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="panel-head table-head">
+          <div>
+            <h3 id="tableTitle">Quick Chat</h3>
+            <p id="tableDesc">Kelola pertanyaan cepat yang tampil di chatbot SINTA.</p>
+          </div>
+
+          <div class="table-actions">
+            <input id="searchInput" type="text" placeholder="Cari data..." />
+            <button id="addQuickButton">+ Tambah Quick Chat</button>
+          </div>
+        </div>
+
+        <div id="tableArea"></div>
+      </section>
+    </main>
+  </section>
+
+  <!-- MODAL -->
+  <section class="modal hidden" id="modal">
+    <div class="modal-card">
+      <button class="modal-close" id="closeModal">×</button>
       <h2>Tambah Quick Chat</h2>
 
       <label>Pertanyaan</label>
-      <input id="questionInput" type="text" placeholder="Masukkan pertanyaan quick chat">
+      <input id="questionInput" type="text" placeholder="Masukkan pertanyaan" />
 
       <label>Status</label>
       <select id="statusInput">
@@ -85,9 +181,9 @@
         <option value="Nonaktif">Nonaktif</option>
       </select>
 
-      <button id="saveQuestion">Simpan</button>
+      <button id="saveQuickButton">Simpan</button>
     </div>
-  </div>
+  </section>
 
   <script src="dashboard.js"></script>
 </body>

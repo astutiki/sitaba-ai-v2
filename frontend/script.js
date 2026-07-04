@@ -17,23 +17,6 @@ const chatBody = document.getElementById("chatBody");
 const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
 
-const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
-
-chats.push({
-  nama: currentVisitor?.nama || "-",
-  email: currentVisitor?.email || "-",
-  question: message,
-  answer: data.reply || "",
-  waktu: new Date().toISOString(),
-  time: new Date().toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }),
-  responseTime: responseTime
-});
-
-localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
-
 let currentVisitor = null;
 let sessionId = createSessionId();
 
@@ -104,7 +87,6 @@ function addBotMessage(message) {
 
   row.appendChild(icon);
   row.appendChild(bubble);
-
   chatBody.appendChild(row);
   chatBody.scrollTop = chatBody.scrollHeight;
 
@@ -112,23 +94,24 @@ function addBotMessage(message) {
 }
 
 async function saveVisitorToBackend(nama, email) {
-  const response = await fetch(API_BASE_URL + "/visitors/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
-    },
-    body: JSON.stringify({
-      name: nama,
-      email: email
-    })
-  });
+  try {
+    const response = await fetch(API_BASE_URL + "/visitors/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        name: nama,
+        email: email
+      })
+    });
 
-  if (!response.ok) {
-    throw new Error("Gagal menyimpan visitor.");
+    return response.ok;
+  } catch (error) {
+    console.error("Visitor backend error:", error);
+    return false;
   }
-
-  return await response.json();
 }
 
 async function sendMessage(customMessage = null) {
@@ -141,7 +124,6 @@ async function sendMessage(customMessage = null) {
   userInput.value = "";
 
   const loadingBubble = addBotMessage("Sedang memproses...");
-  const startTime = performance.now();
 
   try {
     const response = await fetch(API_CHAT_URL, {
@@ -159,8 +141,6 @@ async function sendMessage(customMessage = null) {
     });
 
     const data = await response.json();
-    const endTime = performance.now();
-    const responseTime = Math.round(endTime - startTime);
 
     if (!response.ok) {
       loadingBubble.innerText = safeText(
@@ -172,8 +152,8 @@ async function sendMessage(customMessage = null) {
     loadingBubble.innerText = safeText(
       data.reply || "Maaf, jawaban belum tersedia."
     );
-
   } catch (error) {
+    console.error("Chat error:", error);
     loadingBubble.innerText = "Maaf, koneksi ke AI SITABA belum aktif.";
   }
 }
@@ -216,28 +196,9 @@ startChatButton.addEventListener("click", async () => {
     email: email
   };
 
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-
-  const exists = visitors.some((item) => item.email === email);
-
-  if (!exists) {
-    visitors.push({
-      nama: nama,
-      email: email,
-      waktu: new Date().toISOString()
-    });
-
-    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
-  }
-
-  try {
-    await saveVisitorToBackend(nama, email);
-  } catch (error) {
-    console.error("Gagal menyimpan visitor ke backend:", error);
-  }
+  await saveVisitorToBackend(nama, email);
 
   sessionId = createSessionId();
-
   showChat();
 });
 

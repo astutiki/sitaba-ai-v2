@@ -17,23 +17,6 @@ const chatBody = document.getElementById("chatBody");
 const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
 
-const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
-
-chats.push({
-  nama: currentVisitor?.nama || "-",
-  email: currentVisitor?.email || "-",
-  question: message,
-  answer: data.reply || "",
-  waktu: new Date().toISOString(),
-  time: new Date().toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }),
-  responseTime: responseTime
-});
-
-localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
-
 let currentVisitor = null;
 let sessionId = createSessionId();
 
@@ -72,6 +55,65 @@ function hideSuggestedQuestions() {
   }
 }
 
+function saveVisitorToLocal(nama, email) {
+  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+  const exists = visitors.some((item) => item.email === email);
+
+  if (!exists) {
+    visitors.push({
+      nama: nama,
+      email: email,
+      waktu: new Date().toISOString()
+    });
+
+    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
+  }
+}
+
+function saveChatToLocal(question, answer, responseTime) {
+  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+
+  chats.push({
+    nama: currentVisitor?.nama || "-",
+    email: currentVisitor?.email || "-",
+    question: question,
+    answer: answer || "",
+    waktu: new Date().toISOString(),
+    time: new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    responseTime: responseTime
+  });
+
+  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+}
+
+async function saveVisitorToBackend(nama, email) {
+  try {
+    const response = await fetch(API_BASE_URL + "/visitors/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        name: nama,
+        email: email
+      })
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Gagal menyimpan visitor ke backend:", error);
+    return null;
+  }
+}
+
 function addUserMessage(message) {
   const row = document.createElement("div");
   row.className = "user-row";
@@ -104,31 +146,10 @@ function addBotMessage(message) {
 
   row.appendChild(icon);
   row.appendChild(bubble);
-
   chatBody.appendChild(row);
   chatBody.scrollTop = chatBody.scrollHeight;
 
   return bubble;
-}
-
-async function saveVisitorToBackend(nama, email) {
-  const response = await fetch(API_BASE_URL + "/visitors/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
-    },
-    body: JSON.stringify({
-      name: nama,
-      email: email
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error("Gagal menyimpan visitor.");
-  }
-
-  return await response.json();
 }
 
 async function sendMessage(customMessage = null) {
@@ -163,18 +184,20 @@ async function sendMessage(customMessage = null) {
     const responseTime = Math.round(endTime - startTime);
 
     if (!response.ok) {
-      loadingBubble.innerText = safeText(
-        data.error || data.detail || "Terjadi kesalahan."
-      );
+      const errorMessage = data.error || data.detail || "Terjadi kesalahan.";
+      loadingBubble.innerText = safeText(errorMessage);
+      saveChatToLocal(message, errorMessage, responseTime);
       return;
     }
 
-    loadingBubble.innerText = safeText(
-      data.reply || "Maaf, jawaban belum tersedia."
-    );
+    const answer = data.reply || "Maaf, jawaban belum tersedia.";
+    loadingBubble.innerText = safeText(answer);
+    saveChatToLocal(message, answer, responseTime);
 
   } catch (error) {
-    loadingBubble.innerText = "Maaf, koneksi ke AI SITABA belum aktif.";
+    const errorMessage = "Maaf, koneksi ke AI SITABA belum aktif.";
+    loadingBubble.innerText = errorMessage;
+    saveChatToLocal(message, errorMessage, 0);
   }
 }
 
@@ -216,28 +239,10 @@ startChatButton.addEventListener("click", async () => {
     email: email
   };
 
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-
-  const exists = visitors.some((item) => item.email === email);
-
-  if (!exists) {
-    visitors.push({
-      nama: nama,
-      email: email,
-      waktu: new Date().toISOString()
-    });
-
-    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
-  }
-
-  try {
-    await saveVisitorToBackend(nama, email);
-  } catch (error) {
-    console.error("Gagal menyimpan visitor ke backend:", error);
-  }
+  saveVisitorToLocal(nama, email);
+  await saveVisitorToBackend(nama, email);
 
   sessionId = createSessionId();
-
   showChat();
 });
 

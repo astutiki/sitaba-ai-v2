@@ -1,4 +1,5 @@
 const LOGIN_KEY = "sitaba_admin_login";
+const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
 
 const loginPage = document.getElementById("loginPage");
 const dashboardPage = document.getElementById("dashboardPage");
@@ -34,12 +35,40 @@ function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
-function getVisitors() {
-  return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+async function getVisitors() {
+  try {
+    const response = await fetch(API_BASE_URL + "/visitors/", {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
+    });
+
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error("Gagal ambil visitors:", error);
+    return [];
+  }
 }
 
-function getChats() {
-  return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+async function getChats() {
+  try {
+    const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
+    });
+
+    if (!response.ok) {
+      return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error("Gagal ambil chats:", error);
+    return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+  }
 }
 
 function getLast7Days() {
@@ -59,17 +88,21 @@ function getLast7Days() {
   return result;
 }
 
-function loadDashboardStats() {
-  const visitors = getVisitors();
-  const chats = getChats();
+async function loadDashboardStats() {
+  const visitors = await getVisitors();
+  const chats = await getChats();
 
   document.getElementById("totalUsers").innerText = visitors.length;
   document.getElementById("totalUsersDesc").innerText =
-    visitors.length > 0 ? `${visitors.length} pengguna telah mengisi form chatbot` : "Belum ada pengunjung";
+    visitors.length > 0
+      ? `${visitors.length} pengguna telah mengisi form chatbot`
+      : "Belum ada pengunjung";
 
   document.getElementById("totalChats").innerText = chats.length;
   document.getElementById("totalChatsDesc").innerText =
-    chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
+    chats.length > 0
+      ? "Total seluruh percakapan chatbot"
+      : "Belum ada percakapan";
 
   const responseTimes = chats
     .map(chat => Number(chat.responseTime))
@@ -86,6 +119,7 @@ function loadDashboardStats() {
     responseTimes.length > 0 ? "Rata-rata waktu respon AI" : "Menunggu data";
 
   const today = new Date().toLocaleDateString("id-ID");
+
   const todayChats = chats.filter(chat => {
     if (!chat.waktu) return false;
     return new Date(chat.waktu).toLocaleDateString("id-ID") === today;
@@ -93,11 +127,13 @@ function loadDashboardStats() {
 
   document.getElementById("todayChats").innerText = todayChats.length;
   document.getElementById("todayChatsDesc").innerText =
-    todayChats.length > 0 ? `${todayChats.length} percakapan hari ini` : "Belum ada percakapan hari ini";
+    todayChats.length > 0
+      ? `${todayChats.length} percakapan hari ini`
+      : "Belum ada percakapan hari ini";
 }
 
-function renderRecent() {
-  const chats = getChats().slice(-4).reverse();
+async function renderRecent() {
+  const chats = (await getChats()).slice(-4).reverse();
 
   if (!recentList) return;
 
@@ -118,9 +154,9 @@ function renderRecent() {
   `).join("");
 }
 
-function renderChart() {
+async function renderChart() {
   const last7Days = getLast7Days();
-  const chats = getChats();
+  const chats = await getChats();
 
   const values = last7Days.map(day => {
     return chats.filter(chat => {
@@ -204,10 +240,10 @@ function renderQuickChat() {
   `;
 }
 
-function renderUsers() {
+async function renderUsers() {
   currentPage = "users";
 
-  const visitors = getVisitors();
+  const visitors = await getVisitors();
 
   tableTitle.innerText = "User Pengunjung";
   tableDesc.innerText = "Daftar pengguna yang mengisi form chatbot SINTA.";
@@ -230,7 +266,7 @@ function renderUsers() {
                 <td>${index + 1}</td>
                 <td>${safeText(item.nama || item.name || "-")}</td>
                 <td>${safeText(item.email || "-")}</td>
-                <td>${safeText(item.waktu || "-")}</td>
+                <td>${safeText(item.waktu || item.created_at || "-")}</td>
               </tr>
             `).join("")
             : `<tr><td colspan="4" class="empty">Belum ada pengunjung chatbot.</td></tr>`
@@ -240,13 +276,13 @@ function renderUsers() {
   `;
 }
 
-function setPage(page) {
+async function setPage(page) {
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.page === page);
   });
 
   if (page === "users") {
-    renderUsers();
+    await renderUsers();
   } else {
     renderQuickChat();
   }
@@ -280,17 +316,17 @@ function updateClock() {
   }
 }
 
-function showDashboard() {
+async function showDashboard() {
   loginPage.classList.add("hidden");
   dashboardPage.classList.remove("hidden");
 
-  loadDashboardStats();
-  renderRecent();
-  renderChart();
+  await loadDashboardStats();
+  await renderRecent();
+  await renderChart();
   renderQuickChat();
 }
 
-loginButton.addEventListener("click", () => {
+loginButton.addEventListener("click", async () => {
   const user = adminUser.value.trim();
   const pass = adminPass.value.trim();
 
@@ -300,7 +336,7 @@ loginButton.addEventListener("click", () => {
   }
 
   localStorage.setItem(LOGIN_KEY, "true");
-  showDashboard();
+  await showDashboard();
 });
 
 logoutButton.addEventListener("click", () => {
@@ -347,12 +383,12 @@ saveQuickButton.addEventListener("click", () => {
   renderQuickChat();
 });
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
   updateClock();
   setInterval(updateClock, 1000);
 
   if (localStorage.getItem(LOGIN_KEY) === "true") {
-    showDashboard();
+    await showDashboard();
   } else {
     loginPage.classList.remove("hidden");
     dashboardPage.classList.add("hidden");

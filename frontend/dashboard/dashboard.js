@@ -36,12 +36,8 @@ function safeText(value) {
 }
 
 async function getVisitors() {
-  try {
-    const response = await fetch(API_BASE_URL + "/visitors/", {
-      headers: {
-        "ngrok-skip-browser-warning": "true"
-      }
-    });
+  return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+}
 
     const result = await response.json();
     return result.data || [];
@@ -88,8 +84,8 @@ function getLast7Days() {
   return result;
 }
 
-async function loadDashboardStats() {
-  const visitors = await getVisitors();
+async sync function loadDashboardStats() {
+  const visitors = getVisitors();
   const chats = await getChats();
 
   document.getElementById("totalUsers").innerText = visitors.length;
@@ -98,7 +94,7 @@ async function loadDashboardStats() {
       ? `${visitors.length} pengguna telah mengisi form chatbot`
       : "Belum ada pengunjung";
 
-  document.getElementById("totalChats").innerText = chats.length;
+   document.getElementById("totalChats").innerText = chats.length;
   document.getElementById("totalChatsDesc").innerText =
     chats.length > 0
       ? "Total seluruh percakapan chatbot"

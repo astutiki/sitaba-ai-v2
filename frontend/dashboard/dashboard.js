@@ -36,23 +36,32 @@ function safeText(value) {
 }
 
 async function getVisitors() {
-  return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-}
+  try {
+    const response = await fetch(API_BASE_URL + "/visitors/", {
+      headers: { "ngrok-skip-browser-warning": "true" }
+    });
+
+    if (!response.ok) {
+      return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+    }
 
     const result = await response.json();
-    return result.data || [];
+
+    if (Array.isArray(result.data) && result.data.length > 0) {
+      return result.data;
+    }
+
+    return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
   } catch (error) {
     console.error("Gagal ambil visitors:", error);
-    return [];
+    return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
   }
 }
 
 async function getChats() {
   try {
     const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
-      headers: {
-        "ngrok-skip-browser-warning": "true"
-      }
+      headers: { "ngrok-skip-browser-warning": "true" }
     });
 
     if (!response.ok) {
@@ -60,7 +69,12 @@ async function getChats() {
     }
 
     const result = await response.json();
-    return result.data || [];
+
+    if (Array.isArray(result.data) && result.data.length > 0) {
+      return result.data;
+    }
+
+    return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
   } catch (error) {
     console.error("Gagal ambil chats:", error);
     return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
@@ -84,8 +98,8 @@ function getLast7Days() {
   return result;
 }
 
-async sync function loadDashboardStats() {
-  const visitors = getVisitors();
+async function loadDashboardStats() {
+  const visitors = await getVisitors();
   const chats = await getChats();
 
   document.getElementById("totalUsers").innerText = visitors.length;
@@ -94,11 +108,9 @@ async sync function loadDashboardStats() {
       ? `${visitors.length} pengguna telah mengisi form chatbot`
       : "Belum ada pengunjung";
 
-   document.getElementById("totalChats").innerText = chats.length;
+  document.getElementById("totalChats").innerText = chats.length;
   document.getElementById("totalChatsDesc").innerText =
-    chats.length > 0
-      ? "Total seluruh percakapan chatbot"
-      : "Belum ada percakapan";
+    chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
 
   const responseTimes = chats
     .map(chat => Number(chat.responseTime))
@@ -123,9 +135,7 @@ async sync function loadDashboardStats() {
 
   document.getElementById("todayChats").innerText = todayChats.length;
   document.getElementById("todayChatsDesc").innerText =
-    todayChats.length > 0
-      ? `${todayChats.length} percakapan hari ini`
-      : "Belum ada percakapan hari ini";
+    todayChats.length > 0 ? `${todayChats.length} percakapan hari ini` : "Belum ada percakapan hari ini";
 }
 
 async function renderRecent() {

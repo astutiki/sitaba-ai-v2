@@ -287,3 +287,63 @@ window.addEventListener("DOMContentLoaded", () => {
     dashboardPage.classList.add("hidden");
   }
 });
+
+function loadDashboardStats() {
+  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+
+  // 1. User Pengunjung
+  document.getElementById("totalUsers").innerText = visitors.length;
+  document.getElementById("totalUsersDesc").innerText =
+    visitors.length > 0
+      ? visitors.length + " pengguna telah mengisi form chatbot"
+      : "Belum ada pengunjung";
+
+  // 2. Total Percakapan
+  document.getElementById("totalChats").innerText = chats.length;
+  document.getElementById("totalChatsDesc").innerText =
+    chats.length > 0
+      ? "Total seluruh percakapan chatbot"
+      : "Belum ada percakapan";
+
+  // 3. Rata-rata Respon
+  const responseTimes = chats
+    .map(chat => Number(chat.responseTime))
+    .filter(time => !isNaN(time) && time > 0);
+
+  const avgResponse =
+    responseTimes.length > 0
+      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+      : 0;
+
+  document.getElementById("avgResponse").innerText =
+    avgResponse > 0 ? avgResponse.toFixed(2) + " ms" : "0 ms";
+
+  document.getElementById("avgResponseDesc").innerText =
+    responseTimes.length > 0
+      ? "Rata-rata waktu respon AI"
+      : "Menunggu data";
+
+  // 4. Percakapan Hari Ini
+  const today = new Date().toLocaleDateString("id-ID");
+
+  const todayChats = chats.filter(chat => {
+    if (!chat.waktu) return false;
+    return new Date(chat.waktu).toLocaleDateString("id-ID") === today;
+  });
+
+  document.getElementById("todayChats").innerText = todayChats.length;
+  document.getElementById("todayChatsDesc").innerText =
+    todayChats.length > 0
+      ? todayChats.length + " percakapan hari ini"
+      : "Belum ada percakapan hari ini";
+}
+function showDashboard() {
+  loginPage.classList.add("hidden");
+  dashboardPage.classList.remove("hidden");
+
+  loadDashboardStats();
+  renderRecent();
+  renderChart();
+  renderQuickChat();
+}

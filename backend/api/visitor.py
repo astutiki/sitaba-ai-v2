@@ -43,6 +43,7 @@ def create_visitor(data: VisitorRequest):
         }
 
     except Exception as e:
+        print("ERROR CREATE VISITOR:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -63,4 +64,5 @@ def get_visitors():
         }
 
     except Exception as e:
+        print("ERROR GET VISITORS:", e)
         raise HTTPException(status_code=500, detail=str(e))

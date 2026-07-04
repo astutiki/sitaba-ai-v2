@@ -22,7 +22,7 @@ const statusInput = document.getElementById("statusInput");
 const tableTitle = document.getElementById("tableTitle");
 const tableDesc = document.getElementById("tableDesc");
 
-let currentPage = "dashboard";
+let currentPage = "quick";
 
 let quickChats = [
   { question: "Sebutkan tahun kejadian banjir di Bali?", status: "Aktif" },
@@ -30,48 +30,88 @@ let quickChats = [
   { question: "Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?", status: "Aktif" }
 ];
 
-let recentChats = [
-  { time: "10:24", name: "Anasta", question: "Sebutkan tahun kejadian banjir di Bali?" },
-  { time: "10:21", name: "Budi", question: "Longsor di Jawa Timur terjadi kapan?" },
-  { time: "10:18", name: "Citra", question: "Informasi kebencanaan di Jakarta" },
-  { time: "10:15", name: "Dewi", question: "Cara melaporkan bencana di SITABA?" }
-];
-
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
 }
 
-function getChatbotVisitors() {
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-  const singleVisitor = JSON.parse(localStorage.getItem("sitaba_visitor") || "null");
-
-  if (Array.isArray(visitors) && visitors.length > 0) return visitors;
-  if (singleVisitor && singleVisitor.email) return [singleVisitor];
-
-  return [];
+function getVisitors() {
+  return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
 }
 
-function loadVisitorDashboard() {
-  const visitors = getChatbotVisitors();
+function getChats() {
+  return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+}
+
+function getLast7Days() {
+  const bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  const result = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+
+    result.push({
+      label: `${d.getDate()} ${bulan[d.getMonth()]}`,
+      date: d.toLocaleDateString("id-ID")
+    });
+  }
+
+  return result;
+}
+
+function loadDashboardStats() {
+  const visitors = getVisitors();
+  const chats = getChats();
+
   document.getElementById("totalUsers").innerText = visitors.length;
-}
+  document.getElementById("totalUsersDesc").innerText =
+    visitors.length > 0 ? `${visitors.length} pengguna telah mengisi form chatbot` : "Belum ada pengunjung";
 
-function showDashboard() {
-  loginPage.classList.add("hidden");
-  dashboardPage.classList.remove("hidden");
-  renderRecent();
-  renderChart();
-  loadVisitorDashboard();
-  renderQuickChat();
+  document.getElementById("totalChats").innerText = chats.length;
+  document.getElementById("totalChatsDesc").innerText =
+    chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
+
+  const responseTimes = chats
+    .map(chat => Number(chat.responseTime))
+    .filter(time => !isNaN(time) && time > 0);
+
+  const avgResponse = responseTimes.length
+    ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+    : 0;
+
+  document.getElementById("avgResponse").innerText =
+    avgResponse > 0 ? `${avgResponse.toFixed(2)} ms` : "0 ms";
+
+  document.getElementById("avgResponseDesc").innerText =
+    responseTimes.length > 0 ? "Rata-rata waktu respon AI" : "Menunggu data";
+
+  const today = new Date().toLocaleDateString("id-ID");
+  const todayChats = chats.filter(chat => {
+    if (!chat.waktu) return false;
+    return new Date(chat.waktu).toLocaleDateString("id-ID") === today;
+  });
+
+  document.getElementById("todayChats").innerText = todayChats.length;
+  document.getElementById("todayChatsDesc").innerText =
+    todayChats.length > 0 ? `${todayChats.length} percakapan hari ini` : "Belum ada percakapan hari ini";
 }
 
 function renderRecent() {
-  recentList.innerHTML = recentChats.map(item => `
+  const chats = getChats().slice(-4).reverse();
+
+  if (!recentList) return;
+
+  if (!chats.length) {
+    recentList.innerHTML = `<div class="empty">Belum ada percakapan terbaru.</div>`;
+    return;
+  }
+
+  recentList.innerHTML = chats.map(item => `
     <div class="recent-item">
-      <time>${safeText(item.time)}</time>
+      <time>${safeText(item.time || "-")}</time>
       <div>
-        <p>${safeText(item.question)}</p>
-        <small>${safeText(item.name)}</small>
+        <p>${safeText(item.question || "-")}</p>
+        <small>${safeText(item.nama || item.name || item.email || "-")}</small>
       </div>
       <span>Selesai</span>
     </div>
@@ -79,8 +119,17 @@ function renderRecent() {
 }
 
 function renderChart() {
-  const values = [180, 245, 285, 160, 302, 175, 268];
-  const max = 360;
+  const last7Days = getLast7Days();
+  const chats = getChats();
+
+  const values = last7Days.map(day => {
+    return chats.filter(chat => {
+      if (!chat.waktu) return false;
+      return new Date(chat.waktu).toLocaleDateString("id-ID") === day.date;
+    }).length;
+  });
+
+  const max = Math.max(...values, 1);
   const width = 700;
   const height = 210;
 
@@ -90,14 +139,26 @@ function renderChart() {
     return `${x},${y}`;
   });
 
-  document.getElementById("chartLine").setAttribute("points", points.join(" "));
-  document.getElementById("chartArea").setAttribute("points", `0,230 ${points.join(" ")} 700,230`);
+  const chartLine = document.getElementById("chartLine");
+  const chartArea = document.getElementById("chartArea");
+  const chartDots = document.getElementById("chartDots");
 
-  const dots = document.getElementById("chartDots");
-  dots.innerHTML = points.map(point => {
-    const [x, y] = point.split(",");
-    return `<circle cx="${x}" cy="${y}" r="6" fill="#2478ff" stroke="white" stroke-width="3"></circle>`;
-  }).join("");
+  if (chartLine) chartLine.setAttribute("points", points.join(" "));
+  if (chartArea) chartArea.setAttribute("points", `0,230 ${points.join(" ")} 700,230`);
+
+  if (chartDots) {
+    chartDots.innerHTML = points.map((point, index) => {
+      const [x, y] = point.split(",");
+      return `<circle cx="${x}" cy="${y}" r="6" fill="#2478ff" stroke="white" stroke-width="3">
+        <title>${last7Days[index].label}: ${values[index]} chat</title>
+      </circle>`;
+    }).join("");
+  }
+
+  const labelBox = document.querySelector(".chart-labels");
+  if (labelBox) {
+    labelBox.innerHTML = last7Days.map(day => `<span>${day.label}</span>`).join("");
+  }
 }
 
 function renderQuickChat() {
@@ -146,7 +207,7 @@ function renderQuickChat() {
 function renderUsers() {
   currentPage = "users";
 
-  const visitors = getChatbotVisitors();
+  const visitors = getVisitors();
 
   tableTitle.innerText = "User Pengunjung";
   tableDesc.innerText = "Daftar pengguna yang mengisi form chatbot SINTA.";
@@ -219,6 +280,16 @@ function updateClock() {
   }
 }
 
+function showDashboard() {
+  loginPage.classList.add("hidden");
+  dashboardPage.classList.remove("hidden");
+
+  loadDashboardStats();
+  renderRecent();
+  renderChart();
+  renderQuickChat();
+}
+
 loginButton.addEventListener("click", () => {
   const user = adminUser.value.trim();
   const pass = adminPass.value.trim();
@@ -287,90 +358,3 @@ window.addEventListener("DOMContentLoaded", () => {
     dashboardPage.classList.add("hidden");
   }
 });
-
-function loadDashboardStats() {
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
-
-  // 1. User Pengunjung
-  document.getElementById("totalUsers").innerText = visitors.length;
-  document.getElementById("totalUsersDesc").innerText =
-    visitors.length > 0
-      ? visitors.length + " pengguna telah mengisi form chatbot"
-      : "Belum ada pengunjung";
-
-  // 2. Total Percakapan
-  document.getElementById("totalChats").innerText = chats.length;
-  document.getElementById("totalChatsDesc").innerText =
-    chats.length > 0
-      ? "Total seluruh percakapan chatbot"
-      : "Belum ada percakapan";
-
-  // 3. Rata-rata Respon
-  const responseTimes = chats
-    .map(chat => Number(chat.responseTime))
-    .filter(time => !isNaN(time) && time > 0);
-
-  const avgResponse =
-    responseTimes.length > 0
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
-      : 0;
-
-  document.getElementById("avgResponse").innerText =
-    avgResponse > 0 ? avgResponse.toFixed(2) + " ms" : "0 ms";
-
-  document.getElementById("avgResponseDesc").innerText =
-    responseTimes.length > 0
-      ? "Rata-rata waktu respon AI"
-      : "Menunggu data";
-
-  // 4. Percakapan Hari Ini
-  const today = new Date().toLocaleDateString("id-ID");
-
-  const todayChats = chats.filter(chat => {
-    if (!chat.waktu) return false;
-    return new Date(chat.waktu).toLocaleDateString("id-ID") === today;
-  });
-
-  document.getElementById("todayChats").innerText = todayChats.length;
-  document.getElementById("todayChatsDesc").innerText =
-    todayChats.length > 0
-      ? todayChats.length + " percakapan hari ini"
-      : "Belum ada percakapan hari ini";
-}
-function showDashboard() {
-  loginPage.classList.add("hidden");
-  dashboardPage.classList.remove("hidden");
-
-  loadDashboardStats();
-  renderRecent();
-  renderChart();
-  renderQuickChat();
-}
-
-function saveVisitorToDashboard(nama, email) {
-  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-
-  const exists = visitors.some(v => v.email === email);
-
-  if (!exists) {
-    visitors.push({
-      nama: nama,
-      email: email,
-      waktu: new Date().toISOString()
-    });
-
-    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
-  }
-}
-
-currentVisitor = {
-  nama: nama,
-  email: email
-};
-
-saveVisitorToDashboard(nama, email);
-
-sessionId = createSessionId();
-
-showChat();

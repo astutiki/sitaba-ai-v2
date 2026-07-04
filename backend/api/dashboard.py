@@ -29,7 +29,6 @@ def dashboard_summary():
         "timestamp": datetime.now().isoformat()
     }
 
-
 @router.get("/ai-usage")
 def dashboard_ai_usage():
     return {

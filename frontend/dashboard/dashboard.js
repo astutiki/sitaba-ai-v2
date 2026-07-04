@@ -347,3 +347,30 @@ function showDashboard() {
   renderChart();
   renderQuickChat();
 }
+
+function saveVisitorToDashboard(nama, email) {
+  const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+
+  const exists = visitors.some(v => v.email === email);
+
+  if (!exists) {
+    visitors.push({
+      nama: nama,
+      email: email,
+      waktu: new Date().toISOString()
+    });
+
+    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
+  }
+}
+
+currentVisitor = {
+  nama: nama,
+  email: email
+};
+
+saveVisitorToDashboard(nama, email);
+
+sessionId = createSessionId();
+
+showChat();

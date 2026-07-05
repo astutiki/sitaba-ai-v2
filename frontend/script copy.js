@@ -1,5 +1,5 @@
-console.log("SCRIPT BARU EXPORT AKTIF");
 const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
+
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");
@@ -21,7 +21,6 @@ const suggestedButtons = document.querySelectorAll(".suggested-questions button"
 let currentVisitor = null;
 let sessionId = createSessionId();
 let lastBotReply = "";
-let lastUserQuestion = "";
 
 function createSessionId() {
   return "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
@@ -155,45 +154,86 @@ function addBotMessage(message) {
   return bubble;
 }
 
+function addBotMessage(message) {
+
+    ...
+
+    return bubble;
+}
+
+// ===========================
+// EXPORT BUTTON
+// ===========================
+
 function addExportButtons(bubble, answer) {
-  lastBotReply = answer;
 
-  const exportDiv = document.createElement("div");
-  exportDiv.className = "export-buttons";
+    lastBotReply = answer;
 
-  exportDiv.innerHTML = `
-    <button onclick="downloadFile('pdf')">📄 PDF</button>
-    <button onclick="downloadFile('docx')">📝 Word</button>
-    <button onclick="downloadFile('xlsx')">📊 Excel</button>
-    <button onclick="downloadFile('csv')">📋 CSV</button>
-  `;
+    const exportDiv = document.createElement("div");
+    exportDiv.className = "export-buttons";
 
-  bubble.appendChild(exportDiv);
+    exportDiv.innerHTML = `
+        <button onclick="downloadPDF()">📄 PDF</button>
+        <button onclick="downloadWord()">📝 Word</button>
+        <button onclick="downloadExcel()">📊 Excel</button>
+        <button onclick="downloadCSV()">📋 CSV</button>
+    `;
+
+    bubble.appendChild(exportDiv);
 }
 
-async function downloadFile(format) {
-  const response = await fetch(API_BASE_URL + "/export/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
-    },
-    body: JSON.stringify({
-      question: lastUserQuestion,
-      answer: lastBotReply,
-      format: format
-    })
-  });
+async function downloadPDF() {
 
-  const data = await response.json();
+    const response = await fetch(API_BASE_URL + "/export/pdf", {
 
-  if (!data.success) {
-    alert("Gagal membuat file.");
-    return;
-  }
+        method: "POST",
 
-  window.open(API_BASE_URL + data.download, "_blank");
+        headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true"
+        },
+
+        body: JSON.stringify({
+            title: "Laporan AI SINTA",
+            content: lastBotReply
+        })
+    });
+
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "laporan-ai-sinta.pdf";
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
 }
+
+function downloadWord() {
+    alert("Coming Soon");
+}
+
+function downloadExcel() {
+    alert("Coming Soon");
+}
+
+function downloadCSV() {
+    alert("Coming Soon");
+}
+
+// ===========================
+// BARU LANJUT KE SINI
+// ===========================
+
+async function sendMessage(customMessage = null) {
+
+    ...
 
 async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
@@ -235,12 +275,7 @@ async function sendMessage(customMessage = null) {
 
     const answer = data.reply || "Maaf, jawaban belum tersedia.";
     loadingBubble.innerText = safeText(answer);
-
-    lastUserQuestion = message;
-    lastBotReply = answer;
-
     addExportButtons(loadingBubble, answer);
-
     saveChatToLocal(message, answer, responseTime);
 
   } catch (error) {
@@ -289,7 +324,7 @@ startChatButton.addEventListener("click", async () => {
   };
 
   saveVisitorToLocal(nama, email);
-  //await saveVisitorToBackend(nama, email);
+  await saveVisitorToBackend(nama, email);
 
   sessionId = createSessionId();
   showChat();

@@ -457,3 +457,21 @@ body {
     height: 70px;
   }
 }
+
+.export-buttons {
+  display: flex !important;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.export-buttons button {
+  display: inline-block !important;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 12px;
+  cursor: pointer;
+}

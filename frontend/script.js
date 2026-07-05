@@ -161,12 +161,24 @@ function addExportButtons(bubble, answer) {
   const exportDiv = document.createElement("div");
   exportDiv.className = "export-buttons";
 
-  exportDiv.innerHTML = `
-    <button onclick="downloadFile('pdf')">📄 PDF</button>
-    <button onclick="downloadFile('docx')">📝 Word</button>
-    <button onclick="downloadFile('xlsx')">📊 Excel</button>
-    <button onclick="downloadFile('csv')">📋 CSV</button>
-  `;
+  const formats = [
+    { label: "📄 PDF", format: "pdf" },
+    { label: "📝 Word", format: "docx" },
+    { label: "📊 Excel", format: "xlsx" },
+    { label: "📋 CSV", format: "csv" }
+  ];
+
+  formats.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.innerText = item.label;
+
+    button.addEventListener("click", () => {
+      downloadFile(item.format);
+    });
+
+    exportDiv.appendChild(button);
+  });
 
   bubble.appendChild(exportDiv);
 }

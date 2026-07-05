@@ -1,0 +1,134 @@
+import json
+import time
+import requests
+from pathlib import Path
+
+BASE_URL = "https://emsifa.github.io/api-wilayah-indonesia/api"
+OUTPUT = Path("data/wilayah.json")
+
+
+def get_json(url):
+    response = requests.get(url, timeout=60)
+    response.raise_for_status()
+    return response.json()
+
+
+def buat_alias(nama):
+    nama_lower = nama.lower()
+    aliases = {nama_lower}
+
+    alias_map = {
+        "aceh": ["nanggroe aceh darussalam", "nad"],
+        "sumatera utara": ["sumut"],
+        "sumatera barat": ["sumbar"],
+        "sumatera selatan": ["sumsel"],
+        "jawa barat": ["jabar"],
+        "jawa tengah": ["jateng"],
+        "jawa timur": ["jatim"],
+        "dki jakarta": ["jakarta", "dki"],
+        "di yogyakarta": ["diy", "jogja", "yogya", "yogyakarta"],
+        "nusa tenggara barat": ["ntb"],
+        "nusa tenggara timur": ["ntt"],
+        "kalimantan barat": ["kalbar"],
+        "kalimantan tengah": ["kalteng"],
+        "kalimantan selatan": ["kalsel"],
+        "kalimantan timur": ["kaltim"],
+        "kalimantan utara": ["kaltara"],
+        "sulawesi utara": ["sulut"],
+        "sulawesi tengah": ["sulteng"],
+        "sulawesi selatan": ["sulsel"],
+        "sulawesi tenggara": ["sultra"],
+        "sulawesi barat": ["sulbar"],
+        "maluku utara": ["malut"],
+        "papua barat": ["pabar"],
+        "papua barat daya": ["pbd"],
+    }
+
+    aliases.update(alias_map.get(nama_lower, []))
+
+    if nama_lower.startswith("kabupaten "):
+        pendek = nama_lower.replace("kabupaten ", "").strip()
+        aliases.add(pendek)
+
+    if nama_lower.startswith("kota "):
+        pendek = nama_lower.replace("kota ", "").strip()
+        aliases.add(pendek)
+
+    kabupaten_alias = {
+        "kabupaten tapanuli tengah": ["tapteng", "tapanuli tengah"],
+        "kabupaten tapanuli utara": ["taput", "tapanuli utara"],
+        "kabupaten tapanuli selatan": ["tapsel", "tapanuli selatan"],
+        "kabupaten labuhanbatu": ["labuhan batu"],
+        "kabupaten labuhanbatu utara": ["labura", "labuhan batu utara"],
+        "kabupaten labuhanbatu selatan": ["labusel", "labuhan batu selatan"],
+        "kabupaten mandailing natal": ["madina"],
+        "kabupaten kepulauan seribu": ["pulau seribu"],
+        "kabupaten administrasi kepulauan seribu": ["kepulauan seribu"],
+        "kota administrasi jakarta pusat": ["jakarta pusat", "jakpus"],
+        "kota administrasi jakarta barat": ["jakarta barat", "jakbar"],
+        "kota administrasi jakarta selatan": ["jakarta selatan", "jaksel"],
+        "kota administrasi jakarta timur": ["jakarta timur", "jaktim"],
+        "kota administrasi jakarta utara": ["jakarta utara", "jakut"],
+    }
+
+    aliases.update(kabupaten_alias.get(nama_lower, []))
+
+    return sorted(aliases)
+
+
+def main():
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+
+    wilayah = []
+
+    provinsi_list = get_json(f"{BASE_URL}/provinces.json")
+
+    for idx, prov in enumerate(provinsi_list, start=1):
+        print(f"[{idx}/{len(provinsi_list)}] Ambil provinsi: {prov['name']}")
+
+        prov_item = {
+            "kode": prov["id"],
+            "provinsi": prov["name"].upper(),
+            "alias": buat_alias(prov["name"]),
+            "kabupaten_kota": []
+        }
+
+        kabupaten_list = get_json(f"{BASE_URL}/regencies/{prov['id']}.json")
+
+        for kab in kabupaten_list:
+            print(f"  - Kab/Kota: {kab['name']}")
+
+            kab_item = {
+                "kode": kab["id"],
+                "nama": kab["name"].upper(),
+                "alias": buat_alias(kab["name"]),
+                "kecamatan": []
+            }
+
+            kecamatan_list = get_json(f"{BASE_URL}/districts/{kab['id']}.json")
+
+            for kec in kecamatan_list:
+                kec_item = {
+                    "kode": kec["id"],
+                    "nama": kec["name"].upper(),
+                    "alias": buat_alias(kec["name"])
+                }
+
+                kab_item["kecamatan"].append(kec_item)
+
+            prov_item["kabupaten_kota"].append(kab_item)
+
+            time.sleep(0.05)
+
+        wilayah.append(prov_item)
+
+    with open(OUTPUT, "w", encoding="utf-8") as f:
+        json.dump(wilayah, f, ensure_ascii=False, indent=2)
+
+    print("\nSELESAI")
+    print(f"File dibuat di: {OUTPUT.resolve()}")
+    print(f"Total provinsi: {len(wilayah)}")
+
+
+if __name__ == "__main__":
+    main()

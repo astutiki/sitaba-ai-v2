@@ -2,7 +2,6 @@ from filters.date_filter import deteksi_tahun, deteksi_bulan
 from filters.location_filter import ekstrak_lokasi
 from services.sitaba_service import normalisasi_bencana
 
-
 def deteksi_jenis_bencana(pertanyaan):
     q = pertanyaan.lower()
 
@@ -27,12 +26,27 @@ def deteksi_jenis_bencana(pertanyaan):
 
     return None
 
+def ambil_provinsi_dari_pertanyaan(pertanyaan):
+    q = pertanyaan.lower()
+
+    for keyword, provinsi in sorted(
+        PROVINSI_MAP.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    ):
+        pattern = r"\b" + re.escape(keyword) + r"\b"
+
+        if re.search(pattern, q):
+            return provinsi
+
+    return None
 
 def filter_bencana(daftar, pertanyaan):
     tahun = deteksi_tahun(pertanyaan)
     bulan_angka, bulan_nama = deteksi_bulan(pertanyaan)
     lokasi = ekstrak_lokasi(pertanyaan, daftar)
     jenis_dicari = deteksi_jenis_bencana(pertanyaan)
+
 
     provinsi_dicari = lokasi.get("provinsi")
     kota_dicari = lokasi.get("kota") or []
@@ -103,3 +117,8 @@ def filter_bencana(daftar, pertanyaan):
     }
 
     return hasil, filter_info
+
+    print("====================================")
+    print("PERTANYAAN :", pertanyaan)
+    print("LOKASI :", lokasi)
+    print("====================================")

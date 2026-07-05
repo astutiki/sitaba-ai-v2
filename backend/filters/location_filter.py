@@ -1,15 +1,11 @@
 """
 location_filter.py
-Semua fungsi yang berhubungan dengan lokasi berada di sini.
+Filter lokasi: provinsi, kabupaten/kota, kecamatan, kelurahan, jalan.
 """
 
-# ===========================
-# Mapping Provinsi
-# ===========================
+import re
 
 PROVINSI_MAP = {
-
-    # SUMATERA
     "aceh": "ACEH",
     "sumatera utara": "SUMATERA UTARA",
     "sumut": "SUMATERA UTARA",
@@ -21,14 +17,14 @@ PROVINSI_MAP = {
     "jambi": "JAMBI",
     "sumatera selatan": "SUMATERA SELATAN",
     "sumsel": "SUMATERA SELATAN",
+    "kepulauan bangka belitung": "KEPULAUAN BANGKA BELITUNG",
     "bangka belitung": "KEPULAUAN BANGKA BELITUNG",
     "bengkulu": "BENGKULU",
     "lampung": "LAMPUNG",
 
-    # JAWA
+    "dki jakarta": "DKI JAKARTA",
     "jakarta": "DKI JAKARTA",
     "dki": "DKI JAKARTA",
-    "dki jakarta": "DKI JAKARTA",
     "banten": "BANTEN",
     "jawa barat": "JAWA BARAT",
     "jabar": "JAWA BARAT",
@@ -36,20 +32,18 @@ PROVINSI_MAP = {
     "jateng": "JAWA TENGAH",
     "jawa timur": "JAWA TIMUR",
     "jatim": "JAWA TIMUR",
+    "di yogyakarta": "DI YOGYAKARTA",
+    "yogyakarta": "DI YOGYAKARTA",
+    "diy": "DI YOGYAKARTA",
     "jogja": "DI YOGYAKARTA",
     "jogya": "DI YOGYAKARTA",
-    "yogyakarta": "DI YOGYAKARTA",
-    "di yogyakarta": "DI YOGYAKARTA",
-    "diy": "DI YOGYAKARTA",
 
-    # BALI & NUSA TENGGARA
     "bali": "BALI",
-    "ntb": "NUSA TENGGARA BARAT",
     "nusa tenggara barat": "NUSA TENGGARA BARAT",
-    "ntt": "NUSA TENGGARA TIMUR",
+    "ntb": "NUSA TENGGARA BARAT",
     "nusa tenggara timur": "NUSA TENGGARA TIMUR",
+    "ntt": "NUSA TENGGARA TIMUR",
 
-    # KALIMANTAN
     "kalimantan barat": "KALIMANTAN BARAT",
     "kalbar": "KALIMANTAN BARAT",
     "kalimantan tengah": "KALIMANTAN TENGAH",
@@ -59,9 +53,9 @@ PROVINSI_MAP = {
     "kalimantan timur": "KALIMANTAN TIMUR",
     "kaltim": "KALIMANTAN TIMUR",
     "kalimantan utara": "KALIMANTAN UTARA",
+    "kaltara": "KALIMANTAN UTARA",
     "kalut": "KALIMANTAN UTARA",
 
-    # SULAWESI
     "sulawesi utara": "SULAWESI UTARA",
     "sulut": "SULAWESI UTARA",
     "gorontalo": "GORONTALO",
@@ -74,55 +68,71 @@ PROVINSI_MAP = {
     "sulawesi tenggara": "SULAWESI TENGGARA",
     "sultra": "SULAWESI TENGGARA",
 
-    # MALUKU
-    "maluku": "MALUKU",
     "maluku utara": "MALUKU UTARA",
     "malut": "MALUKU UTARA",
+    "maluku": "MALUKU",
 
-    # PAPUA
-    "papua": "PAPUA",
-    "papua barat": "PAPUA BARAT",
-    "pabar": "PAPUA BARAT",
-    "papua selatan": "PAPUA SELATAN", 
-    "pasel": "PAPUA SELATAN",
-    "papua tengah": "PAPUA TENGAH",
-    "pateng": "PAPUA TENGAH",
-    "papua pegunungan": "PAPUA PEGUNUNGAN",
-    "papeg": "PAPUA PEGUNUNGAN",
     "papua barat daya": "PAPUA BARAT DAYA",
     "pbd": "PAPUA BARAT DAYA",
-    "pabadi": "PAPUA BARAT DAYA",
-    "Pabdang": "PAPUA BARAT DAYA",
+    "papua pegunungan": "PAPUA PEGUNUNGAN",
+    "papeg": "PAPUA PEGUNUNGAN",
+    "papua tengah": "PAPUA TENGAH",
+    "pateng": "PAPUA TENGAH",
+    "papua selatan": "PAPUA SELATAN",
+    "pasel": "PAPUA SELATAN",
+    "papua barat": "PAPUA BARAT",
+    "pabar": "PAPUA BARAT",
+    "papua": "PAPUA",
 }
 
-# ===========================
-# Provinsi
-# ===========================
+KOTA_ALIAS = {
+    "tapteng": "KABUPATEN TAPANULI TENGAH",
+    "tapanuli tengah": "KABUPATEN TAPANULI TENGAH",
+    "taput": "KABUPATEN TAPANULI UTARA",
+    "tapanuli utara": "KABUPATEN TAPANULI UTARA",
+    "tapsel": "KABUPATEN TAPANULI SELATAN",
+    "tapanuli selatan": "KABUPATEN TAPANULI SELATAN",
+    "jakpus": "KOTA ADMINISTRASI JAKARTA PUSAT",
+    "jakbar": "KOTA ADMINISTRASI JAKARTA BARAT",
+    "jaksel": "KOTA ADMINISTRASI JAKARTA SELATAN",
+    "jaktim": "KOTA ADMINISTRASI JAKARTA TIMUR",
+    "jakut": "KOTA ADMINISTRASI JAKARTA UTARA",
+}
+
+
+def _contains_word(text, keyword):
+    pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
+    return re.search(pattern, text.lower()) is not None
+
 
 def ambil_provinsi_dari_pertanyaan(pertanyaan):
-
     q = pertanyaan.lower()
 
-    for keyword, provinsi in PROVINSI_MAP.items():
-
-        if keyword in q:
+    for keyword, provinsi in sorted(PROVINSI_MAP.items(), key=lambda x: len(x[0]), reverse=True):
+        if _contains_word(q, keyword):
             return provinsi
 
     return None
 
 
-# ===========================
-# Kota / Kabupaten
-# ===========================
-
 def ambil_kota_dari_pertanyaan(pertanyaan, daftar):
     q = pertanyaan.lower()
+    hasil = []
+    sudah = set()
 
-    kota_ditemukan = []
-    sudah_ada = set()
+    for alias, nama_resmi in KOTA_ALIAS.items():
+        if _contains_word(q, alias):
+            hasil.append(nama_resmi)
+            sudah.add(nama_resmi)
 
     for item in daftar:
-        kota = (item.get("city") or "").strip()
+        kota = (
+            item.get("kota")
+            or item.get("city")
+            or item.get("kabupaten")
+            or item.get("kabupaten_kota")
+            or ""
+        ).strip()
 
         if not kota:
             continue
@@ -135,6 +145,7 @@ def ambil_kota_dari_pertanyaan(pertanyaan, daftar):
             .replace("kabupaten ", "")
             .replace("kab. ", "")
             .replace("kab ", "")
+            .replace("kota administrasi ", "")
             .replace("kota ", "")
             .replace("kot. ", "")
             .strip()
@@ -147,157 +158,84 @@ def ambil_kota_dari_pertanyaan(pertanyaan, daftar):
             f"kab. {nama_bersih}",
             f"kab {nama_bersih}",
             f"kota {nama_bersih}",
+            f"kota administrasi {nama_bersih}",
         ]
 
         for p in pola:
-            if p and p in q:
-                if kota_upper not in sudah_ada:
-                    kota_ditemukan.append(kota_upper)
-                    sudah_ada.add(kota_upper)
+            if p and _contains_word(q, p):
+                if kota_upper not in sudah:
+                    hasil.append(kota_upper)
+                    sudah.add(kota_upper)
                 break
 
-    return kota_ditemukan
+    return hasil
 
-
-# ===========================
-# Kecamatan
-# ===========================
 
 def ambil_kecamatan_dari_pertanyaan(pertanyaan, daftar):
-
-    pertanyaan = pertanyaan.lower()
-
+    q = pertanyaan.lower()
     hasil = []
-
     sudah = set()
 
     for item in daftar:
-
-        kec = (item.get("district") or "").strip()
-
+        kec = (item.get("kecamatan") or item.get("district") or "").strip()
         if not kec:
             continue
 
         kec_upper = kec.upper()
+        kec_lower = kec.lower()
 
-        if kec_upper in sudah:
-            continue
-
-        if kec.lower() in pertanyaan:
-
+        if kec_upper not in sudah and _contains_word(q, kec_lower):
             hasil.append(kec_upper)
-
             sudah.add(kec_upper)
 
     return hasil
 
 
-# ===========================
-# Kelurahan
-# ===========================
-
 def ambil_kelurahan_dari_pertanyaan(pertanyaan, daftar):
-
-    pertanyaan = pertanyaan.lower()
-
+    q = pertanyaan.lower()
     hasil = []
-
     sudah = set()
 
     for item in daftar:
-
-        kel = (item.get("ward") or "").strip()
-
+        kel = (item.get("kelurahan") or item.get("ward") or item.get("desa") or "").strip()
         if not kel:
             continue
 
         kel_upper = kel.upper()
+        kel_lower = kel.lower()
 
-        if kel_upper in sudah:
-            continue
-
-        if kel.lower() in pertanyaan:
-
+        if kel_upper not in sudah and _contains_word(q, kel_lower):
             hasil.append(kel_upper)
-
             sudah.add(kel_upper)
 
     return hasil
 
 
-# ===========================
-# Jalan
-# ===========================
-
 def ambil_ruas_jalan_dari_pertanyaan(pertanyaan, daftar):
-
-    pertanyaan = pertanyaan.lower()
-
+    q = pertanyaan.lower()
     hasil = []
-
     sudah = set()
 
     for item in daftar:
-
-        jalan = (item.get("road") or "").strip()
-
+        jalan = (item.get("road") or item.get("jalan") or "").strip()
         if not jalan:
             continue
 
         jalan_upper = jalan.upper()
+        jalan_lower = jalan.lower()
 
-        if jalan_upper in sudah:
-            continue
-
-        if jalan.lower() in pertanyaan:
-
+        if jalan_upper not in sudah and jalan_lower in q:
             hasil.append(jalan_upper)
-
             sudah.add(jalan_upper)
 
     return hasil
 
 
-# ===========================
-# Semua Lokasi
-# ===========================
-
 def ekstrak_lokasi(pertanyaan, daftar):
-
     return {
-
-        "provinsi": ambil_provinsi_dari_pertanyaan(
-            pertanyaan
-        ),
-
-        "kota": ambil_kota_dari_pertanyaan(
-            pertanyaan,
-            daftar
-        ),
-
-        "kecamatan": ambil_kecamatan_dari_pertanyaan(
-            pertanyaan,
-            daftar
-        ),
-
-        "kelurahan": ambil_kelurahan_dari_pertanyaan(
-            pertanyaan,
-            daftar
-        ),
-
-        "jalan": ambil_ruas_jalan_dari_pertanyaan(
-            pertanyaan,
-            daftar
-        ),
-
+        "provinsi": ambil_provinsi_dari_pertanyaan(pertanyaan),
+        "kota": ambil_kota_dari_pertanyaan(pertanyaan, daftar),
+        "kecamatan": ambil_kecamatan_dari_pertanyaan(pertanyaan, daftar),
+        "kelurahan": ambil_kelurahan_dari_pertanyaan(pertanyaan, daftar),
+        "jalan": ambil_ruas_jalan_dari_pertanyaan(pertanyaan, daftar),
     }
-
-lokasi = {
-
-    "provinsi": "PAPUA BARAT",
-
-    "kota": [
-        "KABUPATEN MANOKWARI"
-    ]
-
-}

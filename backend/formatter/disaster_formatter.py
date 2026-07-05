@@ -2,7 +2,6 @@ from collections import Counter
 import re
 from html import unescape
 
-
 def clean_html(raw_text):
     if not raw_text:
         return ""

@@ -42,6 +42,10 @@ def buat_alias(nama):
         "maluku utara": ["malut"],
         "papua barat": ["pabar"],
         "papua barat daya": ["pbd"],
+        "papua tengah": ["pateng"],
+        "papua pegunungan":["papeg"],
+        "papua selatan":["pasel"],
+        "papua":["papua"],
     }
 
     aliases.update(alias_map.get(nama_lower, []))

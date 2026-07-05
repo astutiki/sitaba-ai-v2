@@ -2,8 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from database.supabase_client import supabase
 
-router = APIRouter(prefix="/visitors", tags=["Visitors"])
-
+router = APIRouter(prefix="/visitors", tags=["Visitor"])
 
 class VisitorRequest(BaseModel):
     name: str
@@ -13,22 +12,8 @@ class VisitorRequest(BaseModel):
 @router.post("/")
 def create_visitor(data: VisitorRequest):
     try:
-        existing = (
-            supabase.table("visitors")
-            .select("*")
-            .eq("email", data.email)
-            .execute()
-        )
-
-        if existing.data:
-            return {
-                "success": True,
-                "message": "Visitor sudah ada.",
-                "visitor": existing.data[0]
-            }
-
         result = (
-            supabase.table("visitors")
+            supabase.table("visitor")
             .insert({
                 "name": data.name,
                 "email": data.email
@@ -38,7 +23,7 @@ def create_visitor(data: VisitorRequest):
 
         return {
             "success": True,
-            "message": "Visitor berhasil disimpan.",
+            "message": "Visitor login berhasil disimpan.",
             "visitor": result.data[0] if result.data else None
         }
 
@@ -51,7 +36,7 @@ def create_visitor(data: VisitorRequest):
 def get_visitors():
     try:
         result = (
-            supabase.table("visitors")
+            supabase.table("visitor")
             .select("*")
             .order("created_at", desc=True)
             .execute()
@@ -64,5 +49,5 @@ def get_visitors():
         }
 
     except Exception as e:
-        print("ERROR GET VISITORS:", e)
+        print("ERROR GET VISITOR:", e)
         raise HTTPException(status_code=500, detail=str(e))

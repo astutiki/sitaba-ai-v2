@@ -98,18 +98,26 @@ def chat(data: ChatRequest):
     normalized = normalize_response(result)
 
     try:
-        supabase.table("chat_history").insert({
-            "session_id": getattr(data, "sessionId", None),
-            "role": "user",
-            "question": user_message,
-            "answer": normalized["reply"],
-            "category": intent,
-            "intent": intent,
-            "source_type": source,
-            "is_success": True
-        }).execute()
+        result = (
+            supabase
+            .table("chat_history")
+            .insert({
+                "session_id": getattr(data, "sessionId", None),
+                "role": "user",
+                "question": user_message,
+                "answer": normalized["reply"],
+                "category": intent,
+                "intent": intent,
+                "source_type": source,
+                "is_success": True
+            })
+            .execute()
+        )
+
+        print("BERHASIL SIMPAN CHAT_HISTORY:", result.data)
+
     except Exception as e:
-        print("Gagal simpan chat_history:", e)
+        print("ERROR SIMPAN CHAT_HISTORY:", str(e))
 
     return {
         "success": True,

@@ -1,5 +1,5 @@
 console.log("SCRIPT BARU EXPORT AKTIF");
-const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
+const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");

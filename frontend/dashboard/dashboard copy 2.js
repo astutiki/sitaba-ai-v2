@@ -1,5 +1,5 @@
 const LOGIN_KEY = "sitaba_admin_login";
-const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
+const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
 
 const loginPage = document.getElementById("loginPage");
 const dashboardPage = document.getElementById("dashboardPage");

@@ -8,9 +8,11 @@ MODEL_NAME = "gemma3:4b"
 SITABA_NEW_DISASTER_API = "https://sitaba.pu.go.id/api-public/noauth/new-disaster/"
 
 ALLOWED_ORIGINS = [
-    "https://sitaba-ai.vercel.app",
+    "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "http://localhost:5500"
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://sitaba-ai.vercel.app",
 ]
 
 EXPORT_DIR = "exports"

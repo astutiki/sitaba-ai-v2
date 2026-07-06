@@ -1,4 +1,5 @@
 const LOGIN_KEY = "sitaba_admin_login";
+const QUICK_CHAT_KEY = "sitaba_quick_chats";
 const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
 
 const loginPage = document.getElementById("loginPage");
@@ -23,16 +24,49 @@ const statusInput = document.getElementById("statusInput");
 const tableTitle = document.getElementById("tableTitle");
 const tableDesc = document.getElementById("tableDesc");
 
-let currentPage = "quick";
+let currentPage = "dashboard";
 
-let quickChats = [
+let quickChats = JSON.parse(localStorage.getItem(QUICK_CHAT_KEY) || "null") || [
   { question: "Sebutkan tahun kejadian banjir di Bali?", status: "Aktif" },
   { question: "Longsor di Jawa Timur terjadi kapan?", status: "Aktif" },
   { question: "Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?", status: "Aktif" }
 ];
 
+function saveQuickChats() {
+  localStorage.setItem(QUICK_CHAT_KEY, JSON.stringify(quickChats));
+}
+
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return safeText(value);
+
+  return d.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function normalizeEmail(email) {
+  return String(email || "").toLowerCase().trim();
+}
+
+function getUniqueUserCount(visitors) {
+  const emails = new Set();
+
+  visitors.forEach((item) => {
+    const email = normalizeEmail(item.email);
+    if (email) emails.add(email);
+  });
+
+  return emails.size;
 }
 
 async function getVisitors() {
@@ -47,11 +81,11 @@ async function getVisitors() {
 
     const result = await response.json();
 
-    if (Array.isArray(result.data) && result.data.length > 0) {
+    if (Array.isArray(result.data)) {
       return result.data;
     }
 
-    return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
+    return [];
   } catch (error) {
     console.error("Gagal ambil visitors:", error);
     return JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
@@ -70,11 +104,11 @@ async function getChats() {
 
     const result = await response.json();
 
-    if (Array.isArray(result.data) && result.data.length > 0) {
+    if (Array.isArray(result.data)) {
       return result.data;
     }
 
-    return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+    return [];
   } catch (error) {
     console.error("Gagal ambil chats:", error);
     return JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
@@ -102,10 +136,13 @@ async function loadDashboardStats() {
   const visitors = await getVisitors();
   const chats = await getChats();
 
-  document.getElementById("totalUsers").innerText = visitors.length;
+  const totalLogin = visitors.length;
+  const totalUserUnik = getUniqueUserCount(visitors);
+
+  document.getElementById("totalUsers").innerText = totalUserUnik;
   document.getElementById("totalUsersDesc").innerText =
-    visitors.length > 0
-      ? `${visitors.length} pengguna telah mengisi form chatbot`
+    totalLogin > 0
+      ? `${totalUserUnik} user unik dari ${totalLogin} total login`
       : "Belum ada pengunjung";
 
   document.getElementById("totalChats").innerText = chats.length;
@@ -113,7 +150,7 @@ async function loadDashboardStats() {
     chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
 
   const responseTimes = chats
-    .map(chat => Number(chat.responseTime))
+    .map(chat => Number(chat.responseTime ?? chat.response_time))
     .filter(time => !isNaN(time) && time > 0);
 
   const avgResponse = responseTimes.length
@@ -129,13 +166,16 @@ async function loadDashboardStats() {
   const today = new Date().toLocaleDateString("id-ID");
 
   const todayChats = chats.filter(chat => {
-    if (!chat.waktu) return false;
-    return new Date(chat.waktu).toLocaleDateString("id-ID") === today;
+    const waktu = chat.waktu || chat.created_at;
+    if (!waktu) return false;
+    return new Date(waktu).toLocaleDateString("id-ID") === today;
   });
 
   document.getElementById("todayChats").innerText = todayChats.length;
   document.getElementById("todayChatsDesc").innerText =
-    todayChats.length > 0 ? `${todayChats.length} percakapan hari ini` : "Belum ada percakapan hari ini";
+    todayChats.length > 0
+      ? `${todayChats.length} percakapan hari ini`
+      : "Belum ada percakapan hari ini";
 }
 
 async function renderRecent() {
@@ -150,10 +190,10 @@ async function renderRecent() {
 
   recentList.innerHTML = chats.map(item => `
     <div class="recent-item">
-      <time>${safeText(item.time || "-")}</time>
+      <time>${safeText(formatDateTime(item.waktu || item.created_at || item.time))}</time>
       <div>
         <p>${safeText(item.question || "-")}</p>
-        <small>${safeText(item.nama || item.name || item.email || "-")}</small>
+        <small>${safeText(item.name || item.nama || item.email || "-")}</small>
       </div>
       <span>Selesai</span>
     </div>
@@ -166,8 +206,9 @@ async function renderChart() {
 
   const values = last7Days.map(day => {
     return chats.filter(chat => {
-      if (!chat.waktu) return false;
-      return new Date(chat.waktu).toLocaleDateString("id-ID") === day.date;
+      const waktu = chat.waktu || chat.created_at;
+      if (!waktu) return false;
+      return new Date(waktu).toLocaleDateString("id-ID") === day.date;
     }).length;
   });
 
@@ -208,6 +249,7 @@ function renderQuickChat() {
 
   tableTitle.innerText = "Quick Chat";
   tableDesc.innerText = "Kelola pertanyaan cepat yang tampil di chatbot SINTA.";
+  addQuickButton.style.display = "inline-block";
 
   const keyword = searchInput.value.toLowerCase();
 
@@ -248,11 +290,12 @@ function renderQuickChat() {
 
 async function renderUsers() {
   currentPage = "users";
+  addQuickButton.style.display = "none";
 
   const visitors = await getVisitors();
 
   tableTitle.innerText = "User Pengunjung";
-  tableDesc.innerText = "Daftar pengguna yang mengisi form chatbot SINTA.";
+  tableDesc.innerText = "Daftar seluruh login chatbot SINTA. Email yang sama bisa muncul lebih dari sekali sebagai total login.";
 
   tableArea.innerHTML = `
     <table>
@@ -272,11 +315,101 @@ async function renderUsers() {
                 <td>${index + 1}</td>
                 <td>${safeText(item.nama || item.name || "-")}</td>
                 <td>${safeText(item.email || "-")}</td>
-                <td>${safeText(item.waktu || item.created_at || "-")}</td>
+                <td>${safeText(formatDateTime(item.waktu || item.created_at || "-"))}</td>
               </tr>
             `).join("")
             : `<tr><td colspan="4" class="empty">Belum ada pengunjung chatbot.</td></tr>`
         }
+      </tbody>
+    </table>
+  `;
+}
+
+async function renderLogs() {
+  currentPage = "logs";
+  addQuickButton.style.display = "none";
+
+  const chats = (await getChats()).slice().reverse();
+
+  tableTitle.innerText = "Log Percakapan";
+  tableDesc.innerText = "Daftar percakapan pengguna chatbot SINTA dari seluruh perangkat.";
+
+  tableArea.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Waktu</th>
+          <th>Nama / Email</th>
+          <th>Pertanyaan</th>
+          <th>Respon</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${
+          chats.length
+            ? chats.map((item, index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${safeText(formatDateTime(item.waktu || item.created_at || item.time))}</td>
+                <td>${safeText(item.name || item.nama || item.email || "-")}</td>
+                <td>${safeText(item.question || "-")}</td>
+                <td>${safeText(item.responseTime || item.response_time || 0)} ms</td>
+              </tr>
+            `).join("")
+            : `<tr><td colspan="5" class="empty">Belum ada log percakapan.</td></tr>`
+        }
+      </tbody>
+    </table>
+  `;
+}
+
+async function renderAllChats() {
+  currentPage = "logs";
+  await renderLogs();
+
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === "logs");
+  });
+}
+
+async function renderDashboardTable() {
+  currentPage = "dashboard";
+  addQuickButton.style.display = "none";
+
+  tableTitle.innerText = "Ringkasan Dashboard";
+  tableDesc.innerText = "Ringkasan data login dan percakapan lintas perangkat.";
+
+  const visitors = await getVisitors();
+  const chats = await getChats();
+  const totalLogin = visitors.length;
+  const totalUserUnik = getUniqueUserCount(visitors);
+
+  tableArea.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Metrik</th>
+          <th>Nilai</th>
+          <th>Keterangan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>User Unik</td>
+          <td>${totalUserUnik}</td>
+          <td>Berdasarkan email unik</td>
+        </tr>
+        <tr>
+          <td>Total Login</td>
+          <td>${totalLogin}</td>
+          <td>Satu email login 10x tetap dihitung 10 login</td>
+        </tr>
+        <tr>
+          <td>Total Percakapan</td>
+          <td>${chats.length}</td>
+          <td>Gabungan seluruh perangkat dan browser</td>
+        </tr>
       </tbody>
     </table>
   `;
@@ -287,20 +420,30 @@ async function setPage(page) {
     btn.classList.toggle("active", btn.dataset.page === page);
   });
 
-  if (page === "users") {
+  if (page === "dashboard") {
+    await renderDashboardTable();
+  } else if (page === "users") {
     await renderUsers();
+  } else if (page === "logs") {
+    await renderLogs();
   } else {
     renderQuickChat();
   }
+
+  await loadDashboardStats();
+  await renderRecent();
+  await renderChart();
 }
 
 function toggleStatus(index) {
   quickChats[index].status = quickChats[index].status === "Aktif" ? "Nonaktif" : "Aktif";
+  saveQuickChats();
   renderQuickChat();
 }
 
 function deleteQuestion(index) {
   quickChats.splice(index, 1);
+  saveQuickChats();
   renderQuickChat();
 }
 
@@ -329,7 +472,7 @@ async function showDashboard() {
   await loadDashboardStats();
   await renderRecent();
   await renderChart();
-  renderQuickChat();
+  await renderDashboardTable();
 }
 
 loginButton.addEventListener("click", async () => {
@@ -355,15 +498,28 @@ document.querySelectorAll(".nav-item").forEach(btn => {
   btn.addEventListener("click", () => setPage(btn.dataset.page));
 });
 
+const seeAllButton = document.querySelector(".recent-panel .panel-head button");
+if (seeAllButton) {
+  seeAllButton.addEventListener("click", () => {
+    renderAllChats();
+  });
+}
+
 searchInput.addEventListener("input", () => {
   if (currentPage === "users") {
     renderUsers();
+  } else if (currentPage === "logs") {
+    renderLogs();
+  } else if (currentPage === "dashboard") {
+    renderDashboardTable();
   } else {
     renderQuickChat();
   }
 });
 
 addQuickButton.addEventListener("click", () => {
+  questionInput.value = "";
+  statusInput.value = "Aktif";
   modal.classList.remove("hidden");
 });
 
@@ -371,21 +527,32 @@ closeModal.addEventListener("click", () => {
   modal.classList.add("hidden");
 });
 
+modal.addEventListener("click", (event) => {
+  if (event.target === modal) {
+    modal.classList.add("hidden");
+  }
+});
+
 saveQuickButton.addEventListener("click", () => {
   const question = questionInput.value.trim();
 
   if (!question) {
     alert("Pertanyaan wajib diisi.");
+    questionInput.focus();
     return;
   }
 
   quickChats.push({
-    question,
+    question: question,
     status: statusInput.value
   });
 
+  saveQuickChats();
+
   questionInput.value = "";
+  statusInput.value = "Aktif";
   modal.classList.add("hidden");
+
   renderQuickChat();
 });
 

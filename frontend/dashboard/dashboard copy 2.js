@@ -1,5 +1,4 @@
 const LOGIN_KEY = "sitaba_admin_login";
-const QUICK_CHAT_KEY = "sitaba_quick_chats";
 const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
 
 const loginPage = document.getElementById("loginPage");
@@ -26,15 +25,11 @@ const tableDesc = document.getElementById("tableDesc");
 
 let currentPage = "dashboard";
 
-let quickChats = JSON.parse(localStorage.getItem(QUICK_CHAT_KEY) || "null") || [
+let quickChats = [
   { question: "Sebutkan tahun kejadian banjir di Bali?", status: "Aktif" },
   { question: "Longsor di Jawa Timur terjadi kapan?", status: "Aktif" },
   { question: "Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?", status: "Aktif" }
 ];
-
-function saveQuickChats() {
-  localStorage.setItem(QUICK_CHAT_KEY, JSON.stringify(quickChats));
-}
 
 function safeText(value) {
   return String(value ?? "").replace(/[<>]/g, "");
@@ -42,7 +37,9 @@ function safeText(value) {
 
 function formatDateTime(value) {
   if (!value) return "-";
+
   const d = new Date(value);
+
   if (isNaN(d.getTime())) return safeText(value);
 
   return d.toLocaleString("id-ID", {
@@ -72,7 +69,9 @@ function getUniqueUserCount(visitors) {
 async function getVisitors() {
   try {
     const response = await fetch(API_BASE_URL + "/visitors/", {
-      headers: { "ngrok-skip-browser-warning": "true" }
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
     });
 
     if (!response.ok) {
@@ -95,7 +94,9 @@ async function getVisitors() {
 async function getChats() {
   try {
     const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
-      headers: { "ngrok-skip-browser-warning": "true" }
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      }
     });
 
     if (!response.ok) {
@@ -139,15 +140,25 @@ async function loadDashboardStats() {
   const totalLogin = visitors.length;
   const totalUserUnik = getUniqueUserCount(visitors);
 
-  document.getElementById("totalUsers").innerText = totalUserUnik;
-  document.getElementById("totalUsersDesc").innerText =
-    totalLogin > 0
-      ? `${totalUserUnik} user unik dari ${totalLogin} total login`
-      : "Belum ada pengunjung";
+  const totalUsersEl = document.getElementById("totalUsers");
+  const totalUsersDescEl = document.getElementById("totalUsersDesc");
 
-  document.getElementById("totalChats").innerText = chats.length;
-  document.getElementById("totalChatsDesc").innerText =
-    chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
+  if (totalUsersEl) totalUsersEl.innerText = totalUserUnik;
+  if (totalUsersDescEl) {
+    totalUsersDescEl.innerText =
+      totalLogin > 0
+        ? `${totalUserUnik} user unik dari ${totalLogin} total login`
+        : "Belum ada pengunjung";
+  }
+
+  const totalChatsEl = document.getElementById("totalChats");
+  const totalChatsDescEl = document.getElementById("totalChatsDesc");
+
+  if (totalChatsEl) totalChatsEl.innerText = chats.length;
+  if (totalChatsDescEl) {
+    totalChatsDescEl.innerText =
+      chats.length > 0 ? "Total seluruh percakapan chatbot" : "Belum ada percakapan";
+  }
 
   const responseTimes = chats
     .map(chat => Number(chat.responseTime ?? chat.response_time))
@@ -157,11 +168,18 @@ async function loadDashboardStats() {
     ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
     : 0;
 
-  document.getElementById("avgResponse").innerText =
-    avgResponse > 0 ? `${avgResponse.toFixed(2)} ms` : "0 ms";
+  const avgResponseEl = document.getElementById("avgResponse");
+  const avgResponseDescEl = document.getElementById("avgResponseDesc");
 
-  document.getElementById("avgResponseDesc").innerText =
-    responseTimes.length > 0 ? "Rata-rata waktu respon AI" : "Menunggu data";
+  if (avgResponseEl) {
+    avgResponseEl.innerText =
+      avgResponse > 0 ? `${avgResponse.toFixed(2)} ms` : "0 ms";
+  }
+
+  if (avgResponseDescEl) {
+    avgResponseDescEl.innerText =
+      responseTimes.length > 0 ? "Rata-rata waktu respon AI" : "Menunggu data";
+  }
 
   const today = new Date().toLocaleDateString("id-ID");
 
@@ -171,11 +189,16 @@ async function loadDashboardStats() {
     return new Date(waktu).toLocaleDateString("id-ID") === today;
   });
 
-  document.getElementById("todayChats").innerText = todayChats.length;
-  document.getElementById("todayChatsDesc").innerText =
-    todayChats.length > 0
-      ? `${todayChats.length} percakapan hari ini`
-      : "Belum ada percakapan hari ini";
+  const todayChatsEl = document.getElementById("todayChats");
+  const todayChatsDescEl = document.getElementById("todayChatsDesc");
+
+  if (todayChatsEl) todayChatsEl.innerText = todayChats.length;
+  if (todayChatsDescEl) {
+    todayChatsDescEl.innerText =
+      todayChats.length > 0
+        ? `${todayChats.length} percakapan hari ini`
+        : "Belum ada percakapan hari ini";
+  }
 }
 
 async function renderRecent() {
@@ -249,7 +272,6 @@ function renderQuickChat() {
 
   tableTitle.innerText = "Quick Chat";
   tableDesc.innerText = "Kelola pertanyaan cepat yang tampil di chatbot SINTA.";
-  addQuickButton.style.display = "inline-block";
 
   const keyword = searchInput.value.toLowerCase();
 
@@ -290,7 +312,6 @@ function renderQuickChat() {
 
 async function renderUsers() {
   currentPage = "users";
-  addQuickButton.style.display = "none";
 
   const visitors = await getVisitors();
 
@@ -327,7 +348,6 @@ async function renderUsers() {
 
 async function renderLogs() {
   currentPage = "logs";
-  addQuickButton.style.display = "none";
 
   const chats = (await getChats()).slice().reverse();
 
@@ -364,18 +384,8 @@ async function renderLogs() {
   `;
 }
 
-async function renderAllChats() {
-  currentPage = "logs";
-  await renderLogs();
-
-  document.querySelectorAll(".nav-item").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.page === "logs");
-  });
-}
-
 async function renderDashboardTable() {
   currentPage = "dashboard";
-  addQuickButton.style.display = "none";
 
   tableTitle.innerText = "Ringkasan Dashboard";
   tableDesc.innerText = "Ringkasan data login dan percakapan lintas perangkat.";
@@ -437,13 +447,11 @@ async function setPage(page) {
 
 function toggleStatus(index) {
   quickChats[index].status = quickChats[index].status === "Aktif" ? "Nonaktif" : "Aktif";
-  saveQuickChats();
   renderQuickChat();
 }
 
 function deleteQuestion(index) {
   quickChats.splice(index, 1);
-  saveQuickChats();
   renderQuickChat();
 }
 
@@ -498,13 +506,6 @@ document.querySelectorAll(".nav-item").forEach(btn => {
   btn.addEventListener("click", () => setPage(btn.dataset.page));
 });
 
-const seeAllButton = document.querySelector(".recent-panel .panel-head button");
-if (seeAllButton) {
-  seeAllButton.addEventListener("click", () => {
-    renderAllChats();
-  });
-}
-
 searchInput.addEventListener("input", () => {
   if (currentPage === "users") {
     renderUsers();
@@ -518,8 +519,6 @@ searchInput.addEventListener("input", () => {
 });
 
 addQuickButton.addEventListener("click", () => {
-  questionInput.value = "";
-  statusInput.value = "Aktif";
   modal.classList.remove("hidden");
 });
 
@@ -527,32 +526,21 @@ closeModal.addEventListener("click", () => {
   modal.classList.add("hidden");
 });
 
-modal.addEventListener("click", (event) => {
-  if (event.target === modal) {
-    modal.classList.add("hidden");
-  }
-});
-
 saveQuickButton.addEventListener("click", () => {
   const question = questionInput.value.trim();
 
   if (!question) {
     alert("Pertanyaan wajib diisi.");
-    questionInput.focus();
     return;
   }
 
   quickChats.push({
-    question: question,
+    question,
     status: statusInput.value
   });
 
-  saveQuickChats();
-
   questionInput.value = "";
-  statusInput.value = "Aktif";
   modal.classList.add("hidden");
-
   renderQuickChat();
 });
 

@@ -1,4 +1,5 @@
-console.log("SCRIPT BARU EXPORT AKTIF");
+console.log("SCRIPT SINTA");
+
 const API_BASE_URL = "https://constable-krypton-sketch.ngrok-free.dev";
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
@@ -60,36 +61,15 @@ function hideSuggestedQuestions() {
 
 function saveVisitorToLocal(nama, email) {
   const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-  const exists = visitors.some((item) => item.email === email);
 
-  if (!exists) {
-    visitors.push({
-      nama: nama,
-      email: email,
-      waktu: new Date().toISOString()
-    });
-
-    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
-  }
-}
-
-function saveChatToLocal(question, answer, responseTime) {
-  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
-
-  chats.push({
-    nama: currentVisitor?.nama || "-",
-    email: currentVisitor?.email || "-",
-    question: question,
-    answer: answer || "",
+  visitors.push({
+    nama: nama,
+    email: email,
     waktu: new Date().toISOString(),
-    time: new Date().toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit"
-    }),
-    responseTime: responseTime
+    sessionId: sessionId
   });
 
-  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+  localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
 }
 
 async function saveVisitorToBackend(nama, email) {
@@ -107,12 +87,63 @@ async function saveVisitorToBackend(nama, email) {
     });
 
     if (!response.ok) {
+      console.error("Gagal menyimpan visitor:", response.status);
       return null;
     }
 
     return await response.json();
   } catch (error) {
     console.error("Gagal menyimpan visitor ke backend:", error);
+    return null;
+  }
+}
+
+function saveChatToLocal(question, answer, responseTime) {
+  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+
+  chats.push({
+    nama: currentVisitor?.nama || "-",
+    email: currentVisitor?.email || "-",
+    question: question,
+    answer: answer || "",
+    waktu: new Date().toISOString(),
+    time: new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    responseTime: responseTime,
+    sessionId: sessionId
+  });
+
+  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+}
+
+async function saveChatToBackend(question, answer, responseTime) {
+  try {
+    const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        name: currentVisitor?.nama || "-",
+        email: currentVisitor?.email || "-",
+        question: question,
+        answer: answer || "",
+        responseTime: responseTime,
+        sessionId: sessionId
+      })
+    });
+
+    if (!response.ok) {
+      console.error("Gagal menyimpan chat:", response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Gagal menyimpan chat ke backend:", error);
     return null;
   }
 }
@@ -184,27 +215,32 @@ function addExportButtons(bubble, answer) {
 }
 
 async function downloadFile(format) {
-  const response = await fetch(API_BASE_URL + "/export/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
-    },
-    body: JSON.stringify({
-      question: lastUserQuestion,
-      answer: lastBotReply,
-      format: format
-    })
-  });
+  try {
+    const response = await fetch(API_BASE_URL + "/export/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        question: lastUserQuestion,
+        answer: lastBotReply,
+        format: format
+      })
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  if (!data.success) {
-    alert("Gagal membuat file.");
-    return;
+    if (!data.success) {
+      alert("Gagal membuat file.");
+      return;
+    }
+
+    window.open(API_BASE_URL + data.download, "_blank");
+  } catch (error) {
+    console.error("Gagal download file:", error);
+    alert("Gagal download file.");
   }
-
-  window.open(API_BASE_URL + data.download, "_blank");
 }
 
 async function sendMessage(customMessage = null) {
@@ -241,7 +277,10 @@ async function sendMessage(customMessage = null) {
     if (!response.ok) {
       const errorMessage = data.error || data.detail || "Terjadi kesalahan.";
       loadingBubble.innerText = safeText(errorMessage);
+
       saveChatToLocal(message, errorMessage, responseTime);
+      await saveChatToBackend(message, errorMessage, responseTime);
+
       return;
     }
 
@@ -254,11 +293,14 @@ async function sendMessage(customMessage = null) {
     addExportButtons(loadingBubble, answer);
 
     saveChatToLocal(message, answer, responseTime);
+    await saveChatToBackend(message, answer, responseTime);
 
   } catch (error) {
     const errorMessage = "Maaf, koneksi ke AI SITABA belum aktif.";
     loadingBubble.innerText = errorMessage;
+
     saveChatToLocal(message, errorMessage, 0);
+    await saveChatToBackend(message, errorMessage, 0);
   }
 }
 
@@ -300,10 +342,11 @@ startChatButton.addEventListener("click", async () => {
     email: email
   };
 
-  saveVisitorToLocal(nama, email);
-  //await saveVisitorToBackend(nama, email);
-
   sessionId = createSessionId();
+
+  saveVisitorToLocal(nama, email);
+  await saveVisitorToBackend(nama, email);
+
   showChat();
 });
 

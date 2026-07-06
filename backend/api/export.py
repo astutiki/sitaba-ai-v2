@@ -7,6 +7,15 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+)
+from reportlab.lib.styles import getSampleStyleSheet
+
 from datetime import datetime
 import os
 import json
@@ -54,34 +63,46 @@ class ExportRequest(BaseModel):
 def export_pdf(question, answer):
 
     filename = f"chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-
-    filepath = os.path.join(
-        EXPORT_FOLDER,
-        filename
-    )
+    filepath = os.path.join(EXPORT_FOLDER, filename)
 
     styles = getSampleStyleSheet()
 
-    doc = SimpleDocTemplate(filepath)
+    doc = SimpleDocTemplate(
+        filepath,
+        pagesize=A4,
+        rightMargin=1.5 * cm,
+        leftMargin=1.5 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=1.5 * cm,
+    )
+
+    body = styles["BodyText"]
+    body.fontSize = 9
+    body.leading = 12
 
     story = [
-
         Paragraph("<b>AI SINTA</b>", styles["Heading1"]),
-
         Paragraph("<b>Pertanyaan</b>", styles["Heading2"]),
-
-        Paragraph(question, styles["BodyText"]),
-
+        Paragraph(question, body),
+        Spacer(1, 10),
         Paragraph("<b>Jawaban</b>", styles["Heading2"]),
+    ]
 
-        Paragraph(answer, styles["BodyText"]),
+    for line in answer.split("\n"):
+        line = line.strip()
 
+        if not line:
+            story.append(Spacer(1, 6))
+        else:
+            story.append(Paragraph(line, body))
+
+    story.append(Spacer(1, 10))
+    story.append(
         Paragraph(
             datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
             styles["Italic"],
         )
-
-    ]
+    )
 
     doc.build(story)
 

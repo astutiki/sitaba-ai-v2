@@ -293,11 +293,24 @@ async function sendMessage(customMessage = null) {
     addExportButtons(loadingBubble, answer);
 
     saveChatToLocal(message, answer, responseTime);
+
+  try {
     await saveChatToBackend(message, answer, responseTime);
+  } catch (error) {
+   console.error("Simpan chat backend gagal, jawaban tetap tampil:", error);
+  }
 
   } catch (error) {
-    const errorMessage = "Maaf, koneksi ke AI SITABA belum aktif.";
-    loadingBubble.innerText = errorMessage;
+    console.error("ERROR CHAT:", error);
+
+    if (error instanceof TypeError) {
+        loadingBubble.innerText =
+            "Network Error: " + error.message;
+    } else {
+        loadingBubble.innerText =
+            JSON.stringify(error);
+    }
+}
 
     saveChatToLocal(message, errorMessage, 0);
     await saveChatToBackend(message, errorMessage, 0);
@@ -345,10 +358,14 @@ startChatButton.addEventListener("click", async () => {
   sessionId = createSessionId();
 
   saveVisitorToLocal(nama, email);
-  await saveVisitorToBackend(nama, email);
 
-  showChat();
-});
+try {
+  await saveVisitorToBackend(nama, email);
+} catch (error) {
+  console.error("Visitor backend gagal, lanjut chat:", error);
+}
+
+showChat();
 
 sendButton.addEventListener("click", () => {
   sendMessage();

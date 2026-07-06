@@ -1,4 +1,4 @@
-console.log("SCRIPT SINTA");
+console.log("SCRIPT SINTA FINAL PRESENTASI");
 
 const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
 const API_CHAT_URL = API_BASE_URL + "/chat/";
@@ -277,10 +277,8 @@ async function sendMessage(customMessage = null) {
     if (!response.ok) {
       const errorMessage = data.error || data.detail || "Terjadi kesalahan.";
       loadingBubble.innerText = safeText(errorMessage);
-
       saveChatToLocal(message, errorMessage, responseTime);
-      await saveChatToBackend(message, errorMessage, responseTime);
-
+      saveChatToBackend(message, errorMessage, responseTime);
       return;
     }
 
@@ -293,26 +291,16 @@ async function sendMessage(customMessage = null) {
     addExportButtons(loadingBubble, answer);
 
     saveChatToLocal(message, answer, responseTime);
-      try {
-          await saveChatToBackend(message, answer, responseTime);
-      } catch (error) {
-          console.error("Simpan chat backend gagal, jawaban tetap tampil:", error);
-      }
+    saveChatToBackend(message, answer, responseTime);
 
   } catch (error) {
     console.error("ERROR CHAT:", error);
 
-    if (error instanceof TypeError) {
-        loadingBubble.innerText =
-            "Network Error: " + error.message;
-    } else {
-        loadingBubble.innerText =
-            JSON.stringify(error);
-    }
-}
+    const errorMessage = "Network Error: " + error.message;
+    loadingBubble.innerText = errorMessage;
 
     saveChatToLocal(message, errorMessage, 0);
-    await saveChatToBackend(message, errorMessage, 0);
+    saveChatToBackend(message, errorMessage, 0);
   }
 }
 
@@ -327,7 +315,7 @@ chatToggle.addEventListener("click", () => {
 prechatClose.addEventListener("click", hideAllPanels);
 chatClose.addEventListener("click", hideAllPanels);
 
-startChatButton.addEventListener("click", async () => {
+startChatButton.addEventListener("click", () => {
   const nama = visitorName.value.trim();
   const email = visitorEmail.value.trim();
 
@@ -357,13 +345,10 @@ startChatButton.addEventListener("click", async () => {
   sessionId = createSessionId();
 
   saveVisitorToLocal(nama, email);
-    try {
-        await saveVisitorToBackend(nama, email);
-        } catch (error) {
-   console.error("Visitor backend gagal, lanjut chat:", error);
-  }
+  showChat();
 
-showChat();
+  saveVisitorToBackend(nama, email);
+});
 
 sendButton.addEventListener("click", () => {
   sendMessage();

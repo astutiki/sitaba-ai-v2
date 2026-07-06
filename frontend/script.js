@@ -293,12 +293,11 @@ async function sendMessage(customMessage = null) {
     addExportButtons(loadingBubble, answer);
 
     saveChatToLocal(message, answer, responseTime);
-
-  try {
-    await saveChatToBackend(message, answer, responseTime);
-  } catch (error) {
-   console.error("Simpan chat backend gagal, jawaban tetap tampil:", error);
-  }
+      try {
+          await saveChatToBackend(message, answer, responseTime);
+      } catch (error) {
+          console.error("Simpan chat backend gagal, jawaban tetap tampil:", error);
+      }
 
   } catch (error) {
     console.error("ERROR CHAT:", error);
@@ -358,12 +357,11 @@ startChatButton.addEventListener("click", async () => {
   sessionId = createSessionId();
 
   saveVisitorToLocal(nama, email);
-
-try {
-  await saveVisitorToBackend(nama, email);
-} catch (error) {
-  console.error("Visitor backend gagal, lanjut chat:", error);
-}
+    try {
+        await saveVisitorToBackend(nama, email);
+        } catch (error) {
+   console.error("Visitor backend gagal, lanjut chat:", error);
+  }
 
 showChat();
 

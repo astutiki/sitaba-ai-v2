@@ -1,46 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 from database.supabase_client import supabase
 
 router = APIRouter(prefix="/dashboard/chats", tags=["Dashboard Chats"])
-
-
-class ChatRequest(BaseModel):
-    name: str = "-"
-    email: str = "-"
-    question: str
-    answer: str
-    responseTime: int = 0
-    sessionId: str = "-"
-
-
-@router.post("/")
-def create_chat(data: ChatRequest):
-    try:
-        result = (
-            supabase
-            .table("chat_history")
-            .insert({
-                "name": data.name.strip(),
-                "email": data.email.lower().strip(),
-                "question": data.question,
-                "answer": data.answer,
-                "response_time": data.responseTime,
-                "session_id": data.sessionId,
-                "source_type": "chatbot"
-            })
-            .execute()
-        )
-
-        return {
-            "success": True,
-            "message": "Chat berhasil disimpan.",
-            "chat": result.data[0] if result.data else None
-        }
-
-    except Exception as e:
-        print("ERROR CREATE CHAT:", e)
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/")
@@ -80,5 +41,4 @@ def get_chats():
         }
 
     except Exception as e:
-        print("ERROR GET CHATS:", e)
         raise HTTPException(status_code=500, detail=str(e))

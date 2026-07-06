@@ -1,25 +1,22 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from database.supabase_client import supabase
 
 router = APIRouter(prefix="/visitors", tags=["Visitor"])
 
-
 class VisitorRequest(BaseModel):
     name: str
-    email: EmailStr
+    email: str
 
 
 @router.post("/")
 def create_visitor(data: VisitorRequest):
     try:
-        # Tetap INSERT setiap login.
-        # Jadi 1 user login 10x = 10 record login.
         result = (
             supabase.table("visitor")
             .insert({
-                "name": data.name.strip(),
-                "email": data.email.lower().strip()
+                "name": data.name,
+                "email": data.email
             })
             .execute()
         )
@@ -45,21 +42,10 @@ def get_visitors():
             .execute()
         )
 
-        rows = result.data or []
-
-        unique_emails = set()
-
-        for row in rows:
-            email = (row.get("email") or "").lower().strip()
-            if email:
-                unique_emails.add(email)
-
         return {
             "success": True,
-            "total_login": len(rows),
-            "total_user_unik": len(unique_emails),
-            "total": len(rows),
-            "data": rows
+            "total": len(result.data or []),
+            "data": result.data or []
         }
 
     except Exception as e:

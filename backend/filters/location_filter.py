@@ -37,6 +37,7 @@ PROVINSI_MAP = {
     "diy": "DI YOGYAKARTA",
     "jogja": "DI YOGYAKARTA",
     "jogya": "DI YOGYAKARTA",
+    "yogya" :"DI YOGYAKARTA",
 
     "bali": "BALI",
     "nusa tenggara barat": "NUSA TENGGARA BARAT",

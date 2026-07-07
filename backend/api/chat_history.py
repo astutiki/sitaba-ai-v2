@@ -4,7 +4,6 @@ from database.supabase_client import supabase
 
 router = APIRouter(prefix="/dashboard/chats", tags=["Dashboard Chats"])
 
-
 class ChatRequest(BaseModel):
     name: str = "-"
     email: str = "-"
@@ -12,7 +11,6 @@ class ChatRequest(BaseModel):
     answer: str
     responseTime: int = 0
     sessionId: str = "-"
-
 
 @router.post("/")
 def create_chat(data: ChatRequest):
@@ -41,7 +39,6 @@ def create_chat(data: ChatRequest):
     except Exception as e:
         print("ERROR CREATE CHAT:", e)
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @router.get("/")
 def get_chats():

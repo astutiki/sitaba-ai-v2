@@ -1,5 +1,6 @@
-const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
+console.log("SITABA-AI");
 
+const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");
@@ -21,6 +22,7 @@ const suggestedButtons = document.querySelectorAll(".suggested-questions button"
 let currentVisitor = null;
 let sessionId = createSessionId();
 let lastBotReply = "";
+let lastUserQuestion = "";
 
 function createSessionId() {
   return "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
@@ -59,36 +61,15 @@ function hideSuggestedQuestions() {
 
 function saveVisitorToLocal(nama, email) {
   const visitors = JSON.parse(localStorage.getItem("sitaba_visitors") || "[]");
-  const exists = visitors.some((item) => item.email === email);
 
-  if (!exists) {
-    visitors.push({
-      nama: nama,
-      email: email,
-      waktu: new Date().toISOString()
-    });
-
-    localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
-  }
-}
-
-function saveChatToLocal(question, answer, responseTime) {
-  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
-
-  chats.push({
-    nama: currentVisitor?.nama || "-",
-    email: currentVisitor?.email || "-",
-    question: question,
-    answer: answer || "",
+  visitors.push({
+    nama: nama,
+    email: email,
     waktu: new Date().toISOString(),
-    time: new Date().toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit"
-    }),
-    responseTime: responseTime
+    sessionId: sessionId
   });
 
-  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+  localStorage.setItem("sitaba_visitors", JSON.stringify(visitors));
 }
 
 async function saveVisitorToBackend(nama, email) {
@@ -106,12 +87,63 @@ async function saveVisitorToBackend(nama, email) {
     });
 
     if (!response.ok) {
+      console.error("Gagal menyimpan visitor:", response.status);
       return null;
     }
 
     return await response.json();
   } catch (error) {
     console.error("Gagal menyimpan visitor ke backend:", error);
+    return null;
+  }
+}
+
+function saveChatToLocal(question, answer, responseTime) {
+  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+
+  chats.push({
+    nama: currentVisitor?.nama || "-",
+    email: currentVisitor?.email || "-",
+    question: question,
+    answer: answer || "",
+    waktu: new Date().toISOString(),
+    time: new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    responseTime: responseTime,
+    sessionId: sessionId
+  });
+
+  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+}
+
+async function saveChatToBackend(question, answer, responseTime) {
+  try {
+    const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        name: currentVisitor?.nama || "-",
+        email: currentVisitor?.email || "-",
+        question: question,
+        answer: answer || "",
+        responseTime: responseTime,
+        sessionId: sessionId
+      })
+    });
+
+    if (!response.ok) {
+      console.error("Gagal menyimpan chat:", response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Gagal menyimpan chat ke backend:", error);
     return null;
   }
 }
@@ -154,86 +186,62 @@ function addBotMessage(message) {
   return bubble;
 }
 
-function addBotMessage(message) {
-
-    ...
-
-    return bubble;
-}
-
-// ===========================
-// EXPORT BUTTON
-// ===========================
-
 function addExportButtons(bubble, answer) {
+  lastBotReply = answer;
 
-    lastBotReply = answer;
+  const exportDiv = document.createElement("div");
+  exportDiv.className = "export-buttons";
 
-    const exportDiv = document.createElement("div");
-    exportDiv.className = "export-buttons";
+  const formats = [
+    { label: "📄 PDF", format: "pdf" },
+    { label: "📝 Word", format: "docx" },
+    { label: "📊 Excel", format: "xlsx" },
+    { label: "📋 CSV", format: "csv" }
+  ];
 
-    exportDiv.innerHTML = `
-        <button onclick="downloadPDF()">📄 PDF</button>
-        <button onclick="downloadWord()">📝 Word</button>
-        <button onclick="downloadExcel()">📊 Excel</button>
-        <button onclick="downloadCSV()">📋 CSV</button>
-    `;
+  formats.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.innerText = item.label;
 
-    bubble.appendChild(exportDiv);
-}
-
-async function downloadPDF() {
-
-    const response = await fetch(API_BASE_URL + "/export/pdf", {
-
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true"
-        },
-
-        body: JSON.stringify({
-            title: "Laporan AI SINTA",
-            content: lastBotReply
-        })
+    button.addEventListener("click", () => {
+      downloadFile(item.format);
     });
 
-    const blob = await response.blob();
+    exportDiv.appendChild(button);
+  });
 
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-
-    a.href = url;
-    a.download = "laporan-ai-sinta.pdf";
-
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    window.URL.revokeObjectURL(url);
+  bubble.appendChild(exportDiv);
 }
 
-function downloadWord() {
-    alert("Coming Soon");
+async function downloadFile(format) {
+  try {
+    const response = await fetch(API_BASE_URL + "/export/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({
+        question: lastUserQuestion,
+        answer: lastBotReply,
+        format: format
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      alert("Gagal membuat file.");
+      return;
+    }
+
+    window.open(API_BASE_URL + data.download, "_blank");
+  } catch (error) {
+    console.error("Gagal download file:", error);
+    alert("Gagal download file.");
+  }
 }
-
-function downloadExcel() {
-    alert("Coming Soon");
-}
-
-function downloadCSV() {
-    alert("Coming Soon");
-}
-
-// ===========================
-// BARU LANJUT KE SINI
-// ===========================
-
-async function sendMessage(customMessage = null) {
-
-    ...
 
 async function sendMessage(customMessage = null) {
   const message = safeText(customMessage || userInput.value.trim());
@@ -270,18 +278,29 @@ async function sendMessage(customMessage = null) {
       const errorMessage = data.error || data.detail || "Terjadi kesalahan.";
       loadingBubble.innerText = safeText(errorMessage);
       saveChatToLocal(message, errorMessage, responseTime);
+      saveChatToBackend(message, errorMessage, responseTime);
       return;
     }
 
     const answer = data.reply || "Maaf, jawaban belum tersedia.";
     loadingBubble.innerText = safeText(answer);
+
+    lastUserQuestion = message;
+    lastBotReply = answer;
+
     addExportButtons(loadingBubble, answer);
+
     saveChatToLocal(message, answer, responseTime);
+    saveChatToBackend(message, answer, responseTime);
 
   } catch (error) {
-    const errorMessage = "Maaf, koneksi ke AI SITABA belum aktif.";
+    console.error("ERROR CHAT:", error);
+
+    const errorMessage = "Network Error: " + error.message;
     loadingBubble.innerText = errorMessage;
+
     saveChatToLocal(message, errorMessage, 0);
+    saveChatToBackend(message, errorMessage, 0);
   }
 }
 
@@ -296,7 +315,7 @@ chatToggle.addEventListener("click", () => {
 prechatClose.addEventListener("click", hideAllPanels);
 chatClose.addEventListener("click", hideAllPanels);
 
-startChatButton.addEventListener("click", async () => {
+startChatButton.addEventListener("click", () => {
   const nama = visitorName.value.trim();
   const email = visitorEmail.value.trim();
 
@@ -323,11 +342,12 @@ startChatButton.addEventListener("click", async () => {
     email: email
   };
 
-  saveVisitorToLocal(nama, email);
-  await saveVisitorToBackend(nama, email);
-
   sessionId = createSessionId();
+
+  saveVisitorToLocal(nama, email);
   showChat();
+
+  saveVisitorToBackend(nama, email);
 });
 
 sendButton.addEventListener("click", () => {

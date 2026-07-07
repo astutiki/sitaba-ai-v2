@@ -90,47 +90,34 @@ def deteksi_lokasi_manual(pertanyaan):
 
 
 def gabungkan_list_lokasi(lokasi_awal, lokasi_manual):
-    hasil = []
+    hasil = lokasi_awal or []
 
-    for item in lokasi_awal or []:
-        if item and item not in hasil:
-            hasil.append(item)
-
-    for item in lokasi_manual or []:
+    for item in lokasi_manual:
         if item and item not in hasil:
             hasil.append(item)
 
     return hasil
 
 
-def normalisasi_lokasi(teks):
-    teks = (teks or "").upper().strip()
-    teks = teks.replace("KECAMATAN", "")
-    teks = teks.replace("KEC.", "")
-    teks = teks.replace("KEC ", "")
-    teks = teks.replace("KABUPATEN", "")
-    teks = teks.replace("KAB.", "")
-    teks = teks.replace("KAB ", "")
-    teks = teks.replace("KOTA", "")
-    teks = re.sub(r"[^A-Z0-9\s]", " ", teks)
-    teks = re.sub(r"\s+", " ", teks).strip()
-    return teks
-
-
 def cocok_lokasi(target_list, data_lokasi):
     if not target_list:
         return True
 
-    data_norm = normalisasi_lokasi(data_lokasi)
+    data_lokasi = (data_lokasi or "").upper().strip()
 
     for target in target_list:
-        target_norm = normalisasi_lokasi(target)
+        target = (target or "").upper().strip()
 
-        if not target_norm:
+        if not target:
             continue
 
-        # Exact match supaya TEMPEL tidak menarik TEMPE
-        if target_norm == data_norm:
+        if target == data_lokasi:
+            return True
+
+        if target in data_lokasi:
+            return True
+
+        if data_lokasi in target:
             return True
 
     return False
@@ -159,22 +146,18 @@ def filter_bencana(daftar, pertanyaan):
     jenis_dicari = deteksi_jenis_bencana(pertanyaan)
 
     provinsi_dicari = lokasi.get("provinsi") or lokasi_manual.get("provinsi")
-
     kota_dicari = gabungkan_list_lokasi(
         lokasi.get("kota") or [],
         lokasi_manual.get("kota") or []
     )
-
     kecamatan_dicari = gabungkan_list_lokasi(
         lokasi.get("kecamatan") or [],
         lokasi_manual.get("kecamatan") or []
     )
-
     kelurahan_dicari = gabungkan_list_lokasi(
         lokasi.get("kelurahan") or [],
         lokasi_manual.get("kelurahan") or []
     )
-
     jalan_dicari = gabungkan_list_lokasi(
         lokasi.get("jalan") or [],
         lokasi_manual.get("jalan") or []
@@ -195,7 +178,7 @@ def filter_bencana(daftar, pertanyaan):
         kelurahan_data = (data.get("kelurahan") or "").upper().strip()
         jalan_data = (data.get("road") or "").upper().strip()
 
-        if provinsi_dicari and normalisasi_lokasi(provinsi_data) != normalisasi_lokasi(provinsi_dicari):
+        if provinsi_dicari and provinsi_data != provinsi_dicari:
             continue
 
         if not cocok_lokasi(kota_dicari, kota_data):

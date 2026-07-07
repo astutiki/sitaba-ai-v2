@@ -16,7 +16,6 @@ from knowledge.glossary import jawab_glosarium
 
 
 def proses_knowledge(pertanyaan: str, intent: str):
-
     if intent == "DISASTER_IMPACT":
         return jawab_dampak_bencana(pertanyaan)
 

@@ -99,7 +99,41 @@ async function saveVisitorToBackend(nama, email) {
 }
 
 function saveChatToLocal(question, answer, responseTime) {
-  const chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+  let chats = [];
+
+  try {
+    chats = JSON.parse(localStorage.getItem("sitaba_chat_history") || "[]");
+  } catch (error) {
+    chats = [];
+  }
+
+  chats.push({
+    nama: currentVisitor?.nama || "-",
+    email: currentVisitor?.email || "-",
+    question: String(question || "").substring(0, 500),
+    answer: String(answer || "").substring(0, 1500),
+    waktu: new Date().toISOString(),
+    time: new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    responseTime: responseTime,
+    sessionId: sessionId
+  });
+
+  // Simpan maksimal 10 chat terakhir saja
+  chats = chats.slice(-10);
+
+  try {
+    localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
+  } catch (error) {
+    console.warn("LocalStorage penuh, riwayat chat lokal dihapus:", error);
+    localStorage.removeItem("sitaba_chat_history");
+  }
+}
+
+localStorage.removeItem("sitaba_chat_history");
+location.reload();
 
   chats.push({
     nama: currentVisitor?.nama || "-",

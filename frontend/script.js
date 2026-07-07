@@ -150,7 +150,7 @@ location.reload();
   });
 
   localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
-
+  
 async function saveChatToBackend(question, answer, responseTime) {
   try {
     const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
@@ -202,7 +202,7 @@ function addBotMessage(message) {
   icon.className = "bot-icon";
 
   const img = document.createElement("img");
-  img.src = "assets/sinta-1.png";
+  img.src = "assets/sinta-3.png";
   img.alt = "Logo SINTA";
 
   icon.appendChild(img);

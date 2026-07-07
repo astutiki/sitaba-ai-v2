@@ -18,11 +18,28 @@ const userInput = document.getElementById("userInput");
 const chatBody = document.getElementById("chatBody");
 const suggestedQuestions = document.getElementById("suggestedQuestions");
 const suggestedButtons = document.querySelectorAll(".suggested-questions button");
+const themeStylesheet = document.getElementById("themeStylesheet");
+const themeSelect = document.getElementById("themeSelect");
+const THEME_KEY = "sitabaTheme";
 
 let currentVisitor = null;
 let sessionId = createSessionId();
 let lastBotReply = "";
 let lastUserQuestion = "";
+
+function applyTheme(themeHref) {
+  if (!themeStylesheet || !themeHref) return;
+  themeStylesheet.href = themeHref;
+  localStorage.setItem(THEME_KEY, themeHref);
+  if (themeSelect) {
+    themeSelect.value = themeHref;
+  }
+}
+
+function loadSavedTheme() {
+  const savedTheme = localStorage.getItem(THEME_KEY) || "style.css";
+  applyTheme(savedTheme);
+}
 
 function createSessionId() {
   return "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 8);
@@ -132,25 +149,6 @@ function saveChatToLocal(question, answer, responseTime) {
   }
 }
 
-localStorage.removeItem("sitaba_chat_history");
-location.reload();
-
-  chats.push({
-    nama: currentVisitor?.nama || "-",
-    email: currentVisitor?.email || "-",
-    question: question,
-    answer: answer || "",
-    waktu: new Date().toISOString(),
-    time: new Date().toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit"
-    }),
-    responseTime: responseTime,
-    sessionId: sessionId
-  });
-
-  localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
-  
 async function saveChatToBackend(question, answer, responseTime) {
   try {
     const response = await fetch(API_BASE_URL + "/dashboard/chats/", {

@@ -150,7 +150,6 @@ location.reload();
   });
 
   localStorage.setItem("sitaba_chat_history", JSON.stringify(chats));
-}
 
 async function saveChatToBackend(question, answer, responseTime) {
   try {

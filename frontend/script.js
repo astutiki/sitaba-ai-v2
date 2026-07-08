@@ -1,7 +1,6 @@
 console.log("SITABA-AI");
 
 const API_BASE_URL = "https://skimmed-lilly-roving.ngrok-free.dev";
-
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");

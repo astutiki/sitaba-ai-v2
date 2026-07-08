@@ -14,7 +14,7 @@ class VisitorRequest(BaseModel):
 def create_visitor(data: VisitorRequest):
     try:
         result = (
-            supabase.table("visitors")
+            supabase.table("visitor")
             .insert({
                 "name": data.name,
                 "email": data.email
@@ -37,7 +37,7 @@ def create_visitor(data: VisitorRequest):
 def get_visitors():
     try:
         result = (
-            supabase.table("visitors")
+            supabase.table("visitor")
             .select("*")
             .order("created_at", desc=True)
             .execute()

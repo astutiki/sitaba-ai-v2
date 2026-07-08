@@ -232,11 +232,28 @@ def ambil_ruas_jalan_dari_pertanyaan(pertanyaan, daftar):
     return hasil
 
 
+def hapus_provinsi_dari_pertanyaan(pertanyaan):
+    q = pertanyaan
+
+    for keyword in sorted(PROVINSI_MAP.keys(), key=len, reverse=True):
+        pola = r"\b" + re.escape(keyword) + r"\b"
+        q = re.sub(pola, " ", q, flags=re.IGNORECASE)
+
+    q = re.sub(r"\s+", " ", q).strip()
+    return q
+
+
 def ekstrak_lokasi(pertanyaan, daftar):
+    provinsi = ambil_provinsi_dari_pertanyaan(pertanyaan)
+
+    # Setelah provinsi ketemu, hapus kata provinsi dari teks
+    # supaya "jawa barat" tidak ikut kebaca sebagai kecamatan "BARAT"
+    pertanyaan_tanpa_provinsi = hapus_provinsi_dari_pertanyaan(pertanyaan)
+
     return {
-        "provinsi": ambil_provinsi_dari_pertanyaan(pertanyaan),
-        "kota": ambil_kota_dari_pertanyaan(pertanyaan, daftar),
-        "kecamatan": ambil_kecamatan_dari_pertanyaan(pertanyaan, daftar),
-        "kelurahan": ambil_kelurahan_dari_pertanyaan(pertanyaan, daftar),
-        "jalan": ambil_ruas_jalan_dari_pertanyaan(pertanyaan, daftar),
+        "provinsi": provinsi,
+        "kota": ambil_kota_dari_pertanyaan(pertanyaan_tanpa_provinsi, daftar),
+        "kecamatan": ambil_kecamatan_dari_pertanyaan(pertanyaan_tanpa_provinsi, daftar),
+        "kelurahan": ambil_kelurahan_dari_pertanyaan(pertanyaan_tanpa_provinsi, daftar),
+        "jalan": ambil_ruas_jalan_dari_pertanyaan(pertanyaan_tanpa_provinsi, daftar),
     }

@@ -135,6 +135,25 @@ def ada_filter_lokasi(filter_info):
         or filter_info.get("jalan")
     )
 
+def normalisasi_provinsi_dicari(value):
+    if not value:
+        return None
+
+    teks = str(value).upper().strip()
+
+    alias = {
+        "JABAR": "JAWA BARAT",
+        "JAWA BARAT": "JAWA BARAT",
+        "JATIM": "JAWA TIMUR",
+        "JAWA TIMUR": "JAWA TIMUR",
+        "JATENG": "JAWA TENGAH",
+        "JAWA TENGAH": "JAWA TENGAH",
+        "DKI": "DKI JAKARTA",
+        "JAKARTA": "DKI JAKARTA",
+    }
+
+    return alias.get(teks, teks)
+
 
 def filter_bencana(daftar, pertanyaan):
     tahun = deteksi_tahun(pertanyaan)
@@ -146,6 +165,7 @@ def filter_bencana(daftar, pertanyaan):
     jenis_dicari = deteksi_jenis_bencana(pertanyaan)
 
     provinsi_dicari = lokasi.get("provinsi") or lokasi_manual.get("provinsi")
+    
     kota_dicari = gabungkan_list_lokasi(
         lokasi.get("kota") or [],
         lokasi_manual.get("kota") or []

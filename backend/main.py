@@ -16,6 +16,7 @@ from api.visitor import router as visitor_router
 from api.chat_history import router as chat_history_router
 from api.export import router as export_router
 
+
 app = FastAPI(
     title=APP_TITLE,
     description=APP_DESCRIPTION,

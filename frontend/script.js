@@ -1,6 +1,7 @@
 console.log("SITABA-AI");
 
-const API_BASE_URL = "https://wildfowl-extras-comma.ngrok-free.dev";
+const API_BASE_URL = "https://skimmed-lilly-roving.ngrok-free.dev";
+
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");
@@ -369,9 +370,25 @@ startChatButton.addEventListener("click", () => {
   }
 
   currentVisitor = {
-    nama: nama,
+  nama: nama,
+  email: email
+};
+
+// TAMBAHKAN MULAI DARI SINI
+fetch(API_BASE_URL + "/visitors/", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true"
+  },
+  body: JSON.stringify({
+    name: nama,
     email: email
-  };
+  })
+}).catch(error => {
+  console.error("Gagal simpan visitor:", error);
+});
+// SAMPAI SINI
 
   sessionId = createSessionId();
 

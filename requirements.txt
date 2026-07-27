@@ -9,3 +9,5 @@ python-jose
 passlib[bcrypt]
 python-docx
 openpyxl
+fastapi
+uvicorn

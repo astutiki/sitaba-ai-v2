@@ -1,8 +1,11 @@
 fastapi
-uvicorn
 requests
-httpx
+pydantic
 python-dotenv
 supabase
-pydantic
-python-multipart
+reportlab
+pillow
+python-jose
+passlib[bcrypt]
+python-docx
+openpyxl

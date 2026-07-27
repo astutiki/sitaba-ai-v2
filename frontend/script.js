@@ -103,9 +103,8 @@ async function saveVisitorToBackend(nama, email) {
     const response = await fetch(API_BASE_URL + "/visitors/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true"
-      },
+        "Content-Type": "application/json"
+      }
       body: JSON.stringify({
         name: nama,
         email: email

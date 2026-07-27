@@ -1,0 +1,17 @@
+.git
+.vscode
+**/__pycache__
+**/*.pyc
+backend/node_modules
+backend/package-lock.json
+backend/package.json
+backend/server.js
+backend/routes
+backend/exports
+backend/*.zip
+frontend/*copy*.js
+frontend/index1.html
+frontend/index2.html
+frontend/dashboard1.html
+frontend/dashboard/*copy*.js
+frontend/vercel.json

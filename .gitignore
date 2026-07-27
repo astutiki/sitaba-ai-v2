@@ -1,14 +1,6 @@
-<<<<<<< HEAD
 .vercel
-=======
-.vercel
->>>>>>> 73350fd8b951be1abeb6017f13584e1ac8cd63ec
-
 .env
 backend/.env
 __pycache__/
 *.pyc
-.venv/
-venv/
-node_modules/
-.vercel/
+backend/exports/

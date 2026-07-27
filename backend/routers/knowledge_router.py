@@ -15,6 +15,26 @@ from knowledge.faq import jawab_faq
 from knowledge.glossary import jawab_glosarium
 
 
+def jawaban_kanal_pelaporan():
+    return {
+        "reply": (
+            "📢 KANAL PELAPORAN BENCANA SITABA\n\n"
+            "Masyarakat dapat melaporkan kejadian bencana melalui:\n\n"
+            "☎ Call Center Kementerian PU\n"
+            "• 158 ext. 4\n\n"
+            "💬 WhatsApp Center\n"
+            "• 0815-1000-0158\n\n"
+            "🌐 Website Pelaporan SITABA\n"
+            "• https://s.pu.go.id/Mze/sitaba\n\n"
+            "Saat melapor, sertakan informasi lokasi kejadian, "
+            "jenis bencana, waktu kejadian, kondisi terdampak, "
+            "serta foto atau dokumentasi jika tersedia.\n\n"
+            "Sumber: Kanal Pelaporan Bencana Kementerian PU."
+        ),
+        "attachments": [],
+    }
+
+
 def proses_knowledge(pertanyaan: str, intent: str):
     if intent == "DISASTER_IMPACT":
         return jawab_dampak_bencana(pertanyaan)
@@ -39,6 +59,9 @@ def proses_knowledge(pertanyaan: str, intent: str):
 
     if intent == "PUBLIC_INFORMATION":
         return jawab_informasi_publik(pertanyaan)
+
+    if intent == "REPORTING_CHANNEL":
+        return jawaban_kanal_pelaporan()
 
     if intent == "FAQ":
         return jawab_faq(pertanyaan)

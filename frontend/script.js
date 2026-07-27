@@ -1,6 +1,15 @@
 console.log("SITABA-AI");
 
-const API_BASE_URL = "https://skimmed-lilly-roving.ngrok-free.dev";
+// const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "/api";
+fetch("/api/chat/", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+});
+
 const API_CHAT_URL = API_BASE_URL + "/chat/";
 
 const chatToggle = document.getElementById("chatToggle");
@@ -154,8 +163,7 @@ async function saveChatToBackend(question, answer, responseTime) {
     const response = await fetch(API_BASE_URL + "/dashboard/chats/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         name: currentVisitor?.nama || "-",
@@ -373,22 +381,6 @@ startChatButton.addEventListener("click", () => {
   email: email
 };
 
-// TAMBAHKAN MULAI DARI SINI
-fetch(API_BASE_URL + "/visitors/", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true"
-  },
-  body: JSON.stringify({
-    name: nama,
-    email: email
-  })
-}).catch(error => {
-  console.error("Gagal simpan visitor:", error);
-});
-// SAMPAI SINI
-
   sessionId = createSessionId();
 
   saveVisitorToLocal(nama, email);
@@ -414,6 +406,80 @@ suggestedButtons.forEach((button) => {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
+  loadSavedTheme();
+
+  // Setiap halaman dibuka, mulai dari form login visitor
   currentVisitor = null;
+
+  // Hapus visitor aktif lama agar form nama dan email muncul lagi
+  localStorage.removeItem("sitaba_current_visitor");
+
   hideAllPanels();
 });
+
+async function loadQuickChatFromDashboard() {
+  const container = document.getElementById("suggestedQuestions");
+
+  if (!container) {
+    console.error("Elemen #suggestedQuestions tidak ditemukan.");
+    return;
+  }
+
+  try {
+    const response = await fetch(API_BASE_URL + "/quick-chat/", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    const quickChats = Array.isArray(result.data) ? result.data : [];
+
+    container.innerHTML = "";
+    container.style.display = "flex";
+
+    quickChats
+      .filter((item) => String(item.status || "").toLowerCase() === "aktif")
+      .forEach((item) => {
+        const question = String(item.question || "").trim();
+        if (!question) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quick-chat-button";
+        button.textContent = question;
+        button.dataset.question = question;
+
+        button.addEventListener("click", () => {
+          sendMessage(question);
+        });
+
+        container.appendChild(button);
+      });
+
+    console.log("Quick Chat aktif:", container.children.length);
+  } catch (error) {
+    console.error("Gagal memuat Quick Chat:", error);
+    container.innerHTML = "";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadQuickChatFromDashboard);
+window.addEventListener("focus", loadQuickChatFromDashboard);
+
+addBotMessage(data.answer);
+
+document.dispatchEvent(
+    new CustomEvent("sitaba:bot-answer", {
+        detail: {
+            answer: data.answer,
+            chartData: data.chart_data
+        }
+    })
+);

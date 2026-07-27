@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>SITABA AI</title>
-  <link rel="icon" type="image/png" href="assets/sinta-3.png">
+  <link rel="icon" type="image/png" href="./assets/sinta-3.png">
   <link id="themeStylesheet" rel="stylesheet" href="style.css">
 </head>
 
@@ -102,19 +102,7 @@
       </div>
     </div>
 
-    <div class="suggested-questions" id="suggestedQuestions">
-      <button type="button" data-question="Sebutkan tahun kejadian banjir di Bali.">
-        Tahun kejadian banjir di Bali?
-      </button>
-
-      <button type="button" data-question="Informasi longsor di Jawa Timur">
-        Longsor di Jawa Timur terjadi kapan?
-      </button>
-
-      <button type="button" data-question="Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?">
-        Informasi Kebencanaan
-      </button>
-    </div>
+    <div class="suggested-questions" id="suggestedQuestions"></div>
 
     <div class="chat-input">
       <input
@@ -136,6 +124,11 @@
   <button class="chat-button" id="chatToggle" type="button">
     <img src="./assets/sinta-3.png"> alt="Buka Chat SINTA">
   </button>
-  <script src="script.js?v=99"></script>
+
+  <link rel="stylesheet" href="statistics-chart.css">
+  <script src="script.js?v=111"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="statistics-chart.js?v=10"></script>
 </body>
-</html>
+</html> 

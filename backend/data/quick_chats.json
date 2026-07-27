@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "question": "Sebutkan tahun kejadian banjir di Bali?",
+    "status": "Nonaktif"
+  },
+  {
+    "id": 2,
+    "question": "Longsor di Jawa Timur terjadi kapan?",
+    "status": "Aktif"
+  },
+  {
+    "id": 3,
+    "question": "Informasi kebencanaan apa saja yang bisa dicari masyarakat melalui SITABA?",
+    "status": "Aktif"
+  },
+  {
+    "id": 4,
+    "question": "Statistik Bencana 2025",
+    "status": "Aktif"
+  },
+  {
+    "id": 5,
+    "question": "Gempa Bumi di Bengkulu Selatan",
+    "status": "Aktif"
+  }
+]

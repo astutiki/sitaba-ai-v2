@@ -1,0 +1,38 @@
+﻿No;Pertanyaan;Isi Jawaban;Tanggal
+1;Statistik bencana agustus 2024;📊 STATISTIK KEJADIAN BENCANA SITABA;24-07-2026 08:35:49
+2;;Total kejadian : 26;
+3;;🔎 Filter yang digunakan;
+4;;• Bulan : Agustus;
+5;;• Tahun : 2024;
+6;;📌 Berdasarkan Jenis Bencana;
+7;;• Banjir : 14 kejadian;
+8;;• Tanah Longsor : 9 kejadian;
+9;;• Kekeringan : 3 kejadian;
+10;;🗺 Berdasarkan Provinsi;
+11;;• ACEH : 4 kejadian;
+12;;• SULAWESI SELATAN : 4 kejadian;
+13;;• SUMATERA UTARA : 2 kejadian;
+14;;• RIAU : 2 kejadian;
+15;;• SULAWESI UTARA : 2 kejadian;
+16;;• JAWA TIMUR : 2 kejadian;
+17;;• GORONTALO : 1 kejadian;
+18;;• MALUKU UTARA : 1 kejadian;
+19;;• KALIMANTAN TENGAH : 1 kejadian;
+20;;• KALIMANTAN TIMUR : 1 kejadian;
+21;;🏙 Berdasarkan Kabupaten/Kota;
+22;;• KABUPATEN ACEH TENGGARA : 2 kejadian;
+23;;• KABUPATEN TAPANULI UTARA : 1 kejadian;
+24;;• KABUPATEN BONE BOLANGO : 1 kejadian;
+25;;• KABUPATEN GAYO LUES : 1 kejadian;
+26;;• KOTA TERNATE : 1 kejadian;
+27;;• KABUPATEN JENEPONTO : 1 kejadian;
+28;;• KABUPATEN PAKPAK BHARAT : 1 kejadian;
+29;;• KABUPATEN KAMPAR : 1 kejadian;
+30;;• KABUPATEN S I A K : 1 kejadian;
+31;;• KABUPATEN BOLAANG MONGONDOW SELATAN : 1 kejadian;
+32;;📅 Berdasarkan Tahun;
+33;;• 2024 : 26 kejadian;
+34;;🗓 Berdasarkan Bulan;
+35;;• Agustus : 26 kejadian;
+36;;──────────────────────────;
+37;;Sumber : API SITABA Kementerian PU;

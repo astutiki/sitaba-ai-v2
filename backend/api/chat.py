@@ -10,6 +10,7 @@ from routers.disaster_router import (
     proses_data_bencana,
     proses_statistik_bencana,
     proses_infrastruktur_bencana,
+    proses_gempa_bumi,
 )
 
 from routers.knowledge_router import proses_knowledge
@@ -57,7 +58,14 @@ def chat(data: ChatRequest):
 
     intent = deteksi_intent(user_message)
 
-    if intent == "DISASTER":
+    if intent == "EARTHQUAKE":
+        result = proses_gempa_bumi(
+            user_message=user_message,
+            filter_info={},
+        )
+        source = "API SITABA - Gempa Bumi"
+
+    elif intent == "DISASTER":
         result = proses_data_bencana(user_message)
         source = "API SITABA"
 
@@ -82,6 +90,7 @@ def chat(data: ChatRequest):
         "EMERGENCY_CONTACT",
         "FIRST_AID",
         "PUBLIC_INFORMATION",
+        "REPORTING_CHANNEL",
         "FAQ",
         "GLOSSARY",
     ]:

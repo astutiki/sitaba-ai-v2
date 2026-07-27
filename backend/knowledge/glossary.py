@@ -347,7 +347,7 @@ Sistem Informasi Kebencanaan Kementerian Pekerjaan Umum yang menyediakan informa
             return glossary[cocok[0]]
 
     if any(k in q for k in [
-        "glosarium", "istilah", "arti kata", "definisi", "pengertian",
+        "glosarium", "itu apa","istilah", "arti kata", "definisi", "pengertian",
         "pengertiannya", "apa itu", "apaan", "apa maksudnya",
         "itu apa", "artinya apa", "maksud", "jelaskan", "adalah"
     ]):

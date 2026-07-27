@@ -188,6 +188,65 @@
     </div>
   </section>
 
+  <!-- LOG PERCAKAPAN -->
+  <div class="log-header">
+    <div>
+        <h2>Log Percakapan</h2>
+        <p>Daftar percakapan pengguna chatbot SINTA dari seluruh perangkat.</p>
+    </div>
+
+    <div class="log-toolbar">
+        <input
+            type="text"
+            id="logSearchInput"
+            placeholder="Cari data..."
+        >
+        <button type="button" class="export-button" id="exportLogPdf">
+            PDF
+        </button>
+
+        <button type="button" class="export-button" id="exportLogWord">
+            Word
+        </button>
+
+        <button type="button" class="export-button" id="exportLogExcel">
+            Excel
+        </button>
+
+        <button type="button" class="export-button" id="exportLogCsv">
+            CSV
+        </button>
+    </div>
+</div>
+
+<table id="logConversationTable">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Waktu</th>
+            <th>Nama / Email</th>
+            <th>Pertanyaan</th>
+            <th>Respon</th>
+        </tr>
+    </thead>
+    <tbody id="logConversationBody">
+
+        <!-- Data lama tetap dirender di sini -->
+    </tbody>
+</table>
+
+<div class="log-pagination">
+    <div id="logPaginationInfo">
+        Menampilkan 0 data
+    </div>
+
+    <div id="logPaginationButtons"></div>
+</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <script src="dashboard.js"></script>
 </body>
 </html>
